@@ -12,8 +12,6 @@ AM_INIT_AUTOMAKE([1.9 tar-ustar no-define])
 AC_CANONICAL_HOST
 
 AM_CONFIG_HEADER([config.h])
-AX_PREFIX_CONFIG_H([nusmv-config.h])
-
 AC_DEFINE_UNQUOTED(PACKAGE_BUILD_DATE, "`date -u`", Build date)
 
 # Library informations
