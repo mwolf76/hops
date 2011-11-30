@@ -1,6 +1,6 @@
 # -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-AC_PREREQ(2.58)
+AC_PREREQ(2.60)
 
 AC_INIT(hops, 0.0.1, marco.pensallorto@gmail.com)
 
@@ -26,7 +26,6 @@ AC_DEFINE_UNQUOTED(LIBRARY_BUGREPORT, "Please report bugs to <marco.pensallorto@
 oldcflags=$CFLAGS
 AC_PROG_CC
 AM_PROG_CC_C_O
-QEF_C_NORETURN
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_CXXCPP
