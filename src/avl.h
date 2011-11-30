@@ -4,8 +4,11 @@
 #define AVL_ITER_FORWARD 	0
 #define AVL_ITER_BACKWARD 	1
 
+
+/* -- Type definitions ------------------------------------------------------ */
 typedef void* generic_ptr;
 typedef void** generic_dptr;
+typedef void*** generic_tptr;
 typedef void (*void_func_ptr)();
 typedef int (*int_func_ptr)();
 
@@ -46,36 +49,78 @@ struct avl_iterator_struct {
     int count;
 };
 
+/* -- Macros ---------------------------------------------------------------- */
 
-/* constructors and destructors */
-avl_tree_ptr avl_init(int_func_ptr cmp);
-void avl_free (avl_tree_ptr, void (*)(), void (*)());
-
-int avl_delete (avl_tree_ptr, generic_dptr, generic_dptr);
-int avl_insert (avl_tree_ptr, generic_ptr, generic_ptr);
-int avl_lookup (avl_tree_ptr, generic_ptr, generic_dptr);
-int avl_first (avl_tree_ptr, generic_dptr, generic_dptr);
-int avl_last (avl_tree_ptr, generic_dptr, generic_dptr);
-int avl_find_or_add (avl_tree_ptr, generic_ptr, generic_dptr*);
-int avl_count (avl_tree_ptr);
-int avl_numcmp (generic_ptr, generic_ptr);
-void avl_foreach (avl_tree_ptr, void_func_ptr, int);
-
-/* iterators */
-avl_iterator_ptr avl_iter (avl_tree_ptr, int);
-int avl_iter_next (avl_iterator_ptr, generic_dptr, generic_dptr);
-void avl_iter_free (avl_iterator_ptr);
-
-
-/* shortcuts */
-#define avl_count(tree)				                \
+/* number of entries */
+#define avl_count(tree)				                               \
   tree->num_entries
 
-#define avl_is_member(tree, key)		                \
+/* is member? */
+#define avl_is_member(tree, key)		                               \
   avl_lookup(tree, key, (generic_dptr) NULL)
 
-#define avl_foreach_item(avl, iter, dir, key_p, value_p) 	\
-    for(iter = avl_iter(avl, dir); 			\
-	    avl_iter_next(iter, key_p, value_p) || (avl_iter_free(iter),0);)
+
+/**
+   Generate over all items in an avl-tree.  This macro iterator
+   combines avl_init_gen(), avl_gen(), and avl_free_gen() into a
+   single statement iterator.x 
+*/
+#define avl_foreach_item(avl, iter, dir, key_p, value_p) 	              \
+  for(iter = avl_iter(avl, dir);					      \
+      avl_iter_next(iter, key_p, value_p) || (avl_iter_free(iter),0);)
+
+
+/* -- Interface ------------------------------------------------------------- */
+
+/* constructor */
+avl_tree_ptr avl_init(int_func_ptr cmp);
+
+/* destructor */
+void avl_deinit(avl_tree_ptr tree, 
+		void_func_ptr free_key, 
+		void_func_ptr free_value);
+
+/* deletion */
+int avl_delete (avl_tree_ptr tree, 
+		generic_dptr pkey, 
+		generic_dptr pvalue);
+
+/* insertion */
+int avl_insert (avl_tree_ptr tree, 
+		generic_ptr key, 
+		generic_ptr value);
+
+/* lookup (rename to find) */
+int avl_lookup (avl_tree_ptr tree, 
+		generic_ptr key, 
+		generic_dptr pvalue);
+
+/* smallest element (key) */
+int avl_first (avl_tree_ptr tree, 
+	       generic_dptr pkey, 
+	       generic_dptr pvalue);
+
+/* bigger element (key) */
+int avl_last (avl_tree_ptr tree, 
+	      generic_dptr pkey, 
+	      generic_dptr pvalue);
+
+/* find or add */
+int avl_find_or_add (avl_tree_ptr tree, 
+		     generic_ptr key, 
+		     generic_tptr slot);
+
+/* iterate over all nodes with a function */
+void avl_foreach (avl_tree_ptr, void_func_ptr, int);
+
+/* iterator constructor */
+avl_iterator_ptr avl_iter (avl_tree_ptr, int);
+
+/* iterator destructor */
+void avl_iter_free (avl_iterator_ptr);
+
+/* next (key, value) in iteration */
+int avl_iter_next (avl_iterator_ptr, generic_dptr, generic_dptr);
 
 #endif
+
