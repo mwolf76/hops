@@ -29,7 +29,7 @@ AM_PROG_CC_C_O
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_CXXCPP
-CFLAGS="-Wall $excflags$oldcflags"
+CFLAGS="-Wall -g $excflags$oldcflags"
 
 if test "x$ac_cv_prog_CPP" != "x"; then
 AC_DEFINE(HAVE_CPP, 1, Have preprocessor)
