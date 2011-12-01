@@ -57,7 +57,7 @@ struct avl_iterator_struct {
 
 /* is member? */
 #define avl_is_member(tree, key)		                               \
-  avl_lookup(tree, key, (generic_dptr) NULL)
+  avl_find(tree, key, (generic_dptr) NULL)
 
 
 /**
@@ -90,10 +90,10 @@ int avl_insert (avl_tree_ptr tree,
 		generic_ptr key, 
 		generic_ptr value);
 
-/* lookup (rename to find) */
-int avl_lookup (avl_tree_ptr tree, 
-		generic_ptr key, 
-		generic_dptr pvalue);
+/* find (rename to find) */
+int avl_find (avl_tree_ptr tree, 
+	      generic_ptr key, 
+	      generic_dptr pvalue);
 
 /* smallest element (key) */
 int avl_first (avl_tree_ptr tree, 
@@ -105,10 +105,10 @@ int avl_last (avl_tree_ptr tree,
 	      generic_dptr pkey, 
 	      generic_dptr pvalue);
 
-/* find or add */
-int avl_find_or_add (avl_tree_ptr tree, 
-		     generic_ptr key, 
-		     generic_tptr slot);
+/* find or insert */
+int avl_find_or_insert (avl_tree_ptr tree, 
+			generic_ptr key, 
+			generic_tptr slot);
 
 /* iterate over all nodes with a function */
 void avl_foreach (avl_tree_ptr, void_func_ptr, int);
