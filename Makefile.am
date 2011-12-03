@@ -1,5 +1,7 @@
+ACLOCAL_AMFLAGS = -I m4
+
 INCLUDES = -I. -I$(top_srcdir)/src
-SUBDIRS = src
+SUBDIRS = src cython
 
 PACKAGE = $(PACKAGE_NAME)
 VERSION = $(PACKAGE_VERSION)

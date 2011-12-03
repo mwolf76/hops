@@ -6,6 +6,7 @@ AC_INIT(hops, 0.0.1, marco.pensallorto@gmail.com)
 
 # where to look for install.sh and other helpers
 AC_CONFIG_AUX_DIR(helpers)
+AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE([1.9 tar-ustar no-define])
 
@@ -23,13 +24,29 @@ AC_DEFINE_UNQUOTED(LIBRARY_EMAIL, "marco.pensallorto@gmail.com", Library Email)
 AC_DEFINE_UNQUOTED(LIBRARY_BUGREPORT, "Please report bugs to <marco.pensallorto@gmail.com>", Library bug message)
 
 # Checks for programs.
+AC_MSG_NOTICE([Checking for Python])
+have_python=no
+
+AM_PATH_PYTHON(2.4,[],[AC_MSG_WARN([Python not found])])
+if test -z "$PYTHON" || test "$PYTHON" = : ; then
+    have_python=no
+else
+    have_python=yes
+fi
+
+AC_MSG_CHECKING([for Cython >= 0.11.3])
+CYTHON_CHECK_VERSION(0.11.3,  [AC_MSG_RESULT(yes) 
+			      have_cython=yes], 
+			      [AC_MSG_RESULT(no) 
+			      have_cython=no])
+
 oldcflags=$CFLAGS
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_CXXCPP
-CFLAGS="-Wall -g $excflags$oldcflags"
+CFLAGS="-Wall -Wstrict-prototypes -g $excflags$oldcflags"
 
 if test "x$ac_cv_prog_CPP" != "x"; then
 AC_DEFINE(HAVE_CPP, 1, Have preprocessor)
@@ -105,6 +122,7 @@ AC_CHECK_FUNCS([floor memmove memset pow strcasecmp strchr \
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
+		 cython/Makefile
 		 hops.pc])
 
 AC_OUTPUT
