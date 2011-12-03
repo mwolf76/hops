@@ -199,35 +199,45 @@ cdef class Avl(object):
          assert self._tree is not NULL
          return AvlBackwardIterator(self)
 
-     def __repr__(self):
-         """__repr__() <==> repr(T)
-         """
-         pass
-
      def clear(self):
          """clear() -> None, remove all items from T, O(n)
          """
+         assert self._tree is not NULL
          pass
 
      def copy(self):
          """copy() -> a shallow copy of T, O(n*log(n))
          """
+         assert self._tree is not NULL
          pass
 
      def discard(self, key):
          """discard(k) -> None, remove k from T, if k is present, O(log(n))
          """
+         assert self._tree is not NULL
          pass
 
-     def get(self, k, d=None):
+     def get(self, key, default=None):
          """get(k[,d]) -> T[k] if k in T, else d, O(log(n))
          """
-         pass
+         assert self._tree is not NULL
+
+         cdef int res
+         cdef generic_ptr value = NULL
+         assert self._tree is not NULL
+
+         if (avl.avl_find(self._tree,
+                          <generic_ptr> key, 
+                          &value) == 0):
+             return default
+
+         return <object> value
 
      def is_empty(self):
          """is_empty() -> True if len(T) == 0, O(1)
          """
-         pass
+         assert self._tree is not NULL
+         return avl.avl_count(self._tree) == 0
 
      def items(self, reverse=False):
          """items([reverse]) -> list (k, v) items of T, O(n)
@@ -279,7 +289,7 @@ cdef class Avl(object):
 
          try:
              while True:
-                 res.append(iter_.next()[0])
+                 res.append(iter_.next()[1])
          
          except StopIteration:
              pass
