@@ -4,8 +4,11 @@ cdef extern from "src/avl.h":
 
     ctypedef struct avl_tree_struct:
         pass
-
     ctypedef avl_tree_struct* avl_tree_ptr
+
+    ctypedef struct avl_iterator_struct:
+        pass
+    ctypedef avl_iterator_struct* avl_iterator_ptr
 
     # value ptrs
     ctypedef void* generic_ptr
@@ -19,13 +22,24 @@ cdef extern from "src/avl.h":
     ctypedef int (*cmp_func_ptr)(generic_ptr a,
                                  generic_ptr b)
     
-    # constructor
+    # constructors
     avl_tree_ptr avl_init(cmp_func_ptr compare)
+    avl_iterator_ptr avl_iter(avl_tree_ptr tree, 
+                              int dir)
 
-    # destructor
+    # destructors
     void avl_deinit(avl_tree_ptr avl, 
                     free_func_ptr free_key, 
                     free_func_ptr free_value)
+    void avl_iter_free(avl_iterator_ptr iter_)
+
+    # iterators
+    int avl_iter_next(avl_iterator_ptr iter_, 
+                      generic_dptr key_p, 
+                      generic_dptr value_p)
+
+    # number of entries
+    int avl_count(avl_tree_ptr avl)
 
     # deletion
     int avl_delete (avl_tree_ptr avl, 

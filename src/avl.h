@@ -52,10 +52,6 @@ struct avl_iterator_struct {
 
 /* -- Macros ---------------------------------------------------------------- */
 
-/* number of entries */
-#define avl_count(tree)				                               \
-  tree->num_entries
-
 /* is member? */
 #define avl_is_member(tree, key)		                               \
   avl_find(tree, key, (generic_dptr) NULL)
@@ -127,6 +123,10 @@ void avl_iter_free (avl_iterator_ptr);
 int avl_iter_next (avl_iterator_ptr ,
 		   generic_dptr,
 		   generic_dptr);
+
+/* number of entries */
+int avl_count(avl_tree_ptr tree);
+
 
 #ifndef NDEBUG
 /* tree check (debugging) */

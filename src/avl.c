@@ -98,6 +98,15 @@ void avl_deinit(avl_tree_ptr tree,
 }
 
 /** 
+    Returns number of entries in the tree 
+ */
+int avl_count(avl_tree_ptr tree)
+{
+  return tree->num_entries;
+}
+
+
+/** 
    Search for an entry matching `key'.  If found, set `value_p' to the
    associated value field and return 1.  If not found, return 0 and
    leave `value_p' unchanged.  
@@ -327,7 +336,7 @@ avl_iterator_ptr avl_iter(avl_tree_ptr tree, int dir)
   /* what a hack */
   iter = (avl_iterator_ptr)(malloc(sizeof(avl_iterator)));
   iter->tree = tree;
-  iter->nodelist = (avl_node_dptr)(malloc(sizeof(avl_node) * avl_count(tree)));
+  iter->nodelist = (avl_node_dptr)(malloc(sizeof(avl_node) * tree->num_entries));
   iter->count = 0;
 
   if (dir == AVL_ITER_FORWARD) {
