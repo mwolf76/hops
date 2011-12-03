@@ -69,6 +69,22 @@ cdef class AvlBackwardIterator(object):
 cdef class Avl(object):
      cdef avl.avl_tree_ptr _tree
 
+     def __init__(self, seq=None):
+         """Python ctor
+         """
+         if seq is not None:
+             try:
+                 for (k, v) in seq.__getattribute__('iteritems')():
+                     self.__setitem__(k, v)
+
+             except AttributeError:
+                 try:
+                     for (k, v) in seq.__getattribute__('__iter__')():
+                         self.__setitem__(k, v)
+
+                 except AttributeError:
+                     raise ValueError("Iterable sequence expected")
+
      def __cinit__(self):
          """C ctor
          """
