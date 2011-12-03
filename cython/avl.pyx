@@ -243,29 +243,62 @@ cdef class Avl(object):
          pass
 
      def items(self, reverse=False):
-         """items([reverse]) -> generator for (k, v) items of T, O(n)
+         """items([reverse]) -> list (k, v) items of T, O(n)
          """
-         if not reverse:
-             return AvlForwardIterator(self)
-         else:
-             return AvlBackwardIterator(self)
+         res = []
 
+         if not reverse:
+             iter_ = iter(self)
+         else:
+             iter_ = reversed(self)
+
+         try:
+             while True:
+                 res.append(iter_.next())
+         
+         except StopIteration:
+             pass
+
+         return res
+             
      def keys(self, reverse=False):
-         """keys([reverse]) -> generator for keys of T, O(n)
+         """keys([reverse]) -> list for keys of T, O(n)
          """
-         if not reverse:
-             return AvlKeysForwardIterator(self)
-         else:
-             return AvlKeysBackwardIterator(self)
+         res = []
 
+         if not reverse:
+             iter_ = iter(self)
+         else:
+             iter_ = reversed(self)
+
+         try:
+             while True:
+                 res.append(iter_.next()[0])
+         
+         except StopIteration:
+             pass
+
+         return res
+             
      def values(self, reverse=False):
          """values([reverse]) -> generator for values of T, O(n)
          """
-         if not reverse:
-             return AvlValuesForwardIterator(self)
-         else:
-             return AvlValuesBackwardIterator(self)
+         res = []
 
+         if not reverse:
+             iter_ = iter(self)
+         else:
+             iter_ = reversed(self)
+
+         try:
+             while True:
+                 res.append(iter_.next()[0])
+         
+         except StopIteration:
+             pass
+
+         return res
+         
      def pop(self, k, d=None):
          """pop(k[,d]) -> v, remove specified key and return the corresponding value, O(log(n))
          """
