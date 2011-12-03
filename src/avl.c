@@ -20,13 +20,24 @@
 
 #define STACK_SIZE 0x2000
 
-/* static function prototypes*/
-static inline avl_node_ptr new_node();
-static inline avl_node_ptr find_rightmost();
-static inline void do_rebalance(); 
-static inline void compute_height(avl_node_ptr node);
-static inline void rotate_left();
-static inline void rotate_right();
+/* static function prototypes */
+static inline avl_node_ptr 
+new_node(generic_ptr key, generic_ptr value);
+
+static inline avl_node_ptr
+find_rightmost(avl_node_dptr node_p);
+
+static inline void 
+do_rebalance(avl_node_tptr stack_nodep, int stack_n);
+
+static inline void
+compute_height(avl_node_ptr node);
+
+static inline void
+rotate_left(avl_node_dptr node_p);
+
+static inline void
+rotate_right(avl_node_dptr node_p);
 
 static inline void 
 avl_record_iter_forward(avl_node_ptr node, avl_iterator_ptr iter);
@@ -35,15 +46,18 @@ static inline void
 avl_record_iter_backward(avl_node_ptr node, avl_iterator_ptr iter);
 
 static inline void 
-avl_walk_forward(avl_node_ptr node, void_func_ptr func);
+avl_walk_forward(avl_node_ptr node, iter_func_ptr func);
 
 static inline void 
-avl_walk_backward(avl_node_ptr node, void_func_ptr func);
+avl_walk_backward(avl_node_ptr node, iter_func_ptr func);
 
-static inline int do_check_tree();
-static inline void free_entry(avl_node_ptr node, 
-			      void_func_ptr key_free, 
-			      void_func_ptr value_free);
+#ifndef NDEBUG
+static inline int
+do_check_tree(avl_node_ptr node, cmp_func_ptr compare, int* error);
+#endif
+
+static inline void
+free_entry(avl_node_ptr node, free_func_ptr key_free, free_func_ptr value_free);
 
 /**
    Initialize and return a new avl_tree.  Use the function `compare'
@@ -54,7 +68,7 @@ static inline void free_entry(avl_node_ptr node,
    and return a number < 0, == 0, > 0 depending on whether a < b, a ==
    b, or a > b, respectively. 
 */
-avl_tree_ptr avl_init(int_func_ptr cmp)
+avl_tree_ptr avl_init(cmp_func_ptr cmp)
 {
   avl_tree_ptr tree = (avl_tree_ptr)(malloc(sizeof(avl_tree)));
 
@@ -76,8 +90,8 @@ avl_tree_ptr avl_init(int_func_ptr cmp)
    The C-library function free is often suitable as a free function.
 */
 void avl_deinit(avl_tree_ptr tree, 
-		void_func_ptr key_free,
-		void_func_ptr value_free)
+		free_func_ptr key_free,
+		free_func_ptr value_free)
 {
   free_entry(tree->root, key_free, value_free);
   free(tree);
@@ -370,7 +384,7 @@ void avl_iter_free(avl_iterator_ptr iter)
    where `key' is the key the item was stored under, and `value' the
    value of the item.
 */
-void avl_foreach(avl_tree_ptr tree, void_func_ptr func, int direction)
+void avl_foreach(avl_tree_ptr tree, iter_func_ptr func, int direction)
 {
   if (direction == AVL_ITER_FORWARD) {
     avl_walk_forward(tree->root, func);
@@ -495,7 +509,7 @@ rotate_right( avl_node_dptr node_p)
 
 
 static inline void 
-avl_walk_forward(avl_node_ptr node, void_func_ptr func)
+avl_walk_forward(avl_node_ptr node, iter_func_ptr func)
 {
   if (node) {
     avl_walk_forward(node->left, func);
@@ -506,7 +520,7 @@ avl_walk_forward(avl_node_ptr node, void_func_ptr func)
 
 
 static inline void 
-avl_walk_backward(avl_node_ptr node, void_func_ptr func)
+avl_walk_backward(avl_node_ptr node, iter_func_ptr func)
 {
   if (node) {
     avl_walk_backward(node->right, func);
@@ -544,7 +558,7 @@ compute_height(avl_node_ptr node) {
 
 static inline void 
 free_entry(avl_node_ptr node, 
-           void_func_ptr key_free, void_func_ptr value_free)
+           free_func_ptr key_free, free_func_ptr value_free)
 {
   if (node) {
     free_entry(node->left, key_free, value_free);
@@ -571,9 +585,10 @@ new_node(generic_ptr key, generic_ptr value)
   return new;
 }
 
+#ifndef NDEBUG
 /* Check if the tree is well-formed (this is for debugging purposes
    only) */
-static int 
+int 
 avl_check_tree(avl_tree_ptr tree)
 {
   int error = 0;
@@ -584,7 +599,7 @@ avl_check_tree(avl_tree_ptr tree)
 
 /* Internal service of avl_check_tree */
 static inline int 
-do_check_tree(avl_node_ptr node, int_func_ptr compare, int* error)
+do_check_tree(avl_node_ptr node, cmp_func_ptr compare, int* error)
 {
   int l_height, r_height, comp_height, bal;
     
@@ -624,3 +639,4 @@ do_check_tree(avl_node_ptr node, int_func_ptr compare, int* error)
 
   return comp_height;
 }
+#endif

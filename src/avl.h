@@ -9,8 +9,9 @@
 typedef void* generic_ptr;
 typedef void** generic_dptr;
 typedef void*** generic_tptr;
-typedef void (*void_func_ptr)();
-typedef int (*int_func_ptr)();
+typedef void (*free_func_ptr)(generic_ptr data);
+typedef void (*iter_func_ptr)(generic_ptr key, generic_ptr value);
+typedef int (*cmp_func_ptr)(generic_ptr a, generic_ptr b);
 
 typedef struct avl_node_struct avl_node;
 typedef avl_node* avl_node_ptr;
@@ -35,7 +36,7 @@ struct avl_tree_struct {
   avl_node_ptr root;
 
   /* comparison function */
-  int_func_ptr cmp;
+  cmp_func_ptr cmp;
 
   int num_entries;
   int modified;
@@ -73,24 +74,24 @@ struct avl_iterator_struct {
 /* -- Interface ------------------------------------------------------------- */
 
 /* constructor */
-avl_tree_ptr avl_init(int_func_ptr cmp);
+avl_tree_ptr avl_init(cmp_func_ptr cmp);
 
 /* destructor */
 void avl_deinit(avl_tree_ptr tree, 
-		void_func_ptr free_key, 
-		void_func_ptr free_value);
+		free_func_ptr free_key, 
+		free_func_ptr free_value);
 
 /* deletion */
 int avl_delete (avl_tree_ptr tree, 
-		generic_dptr pkey, 
-		generic_dptr pvalue);
+		generic_dptr key_p, 
+		generic_dptr value_p);
 
 /* insertion */
 int avl_insert (avl_tree_ptr tree, 
 		generic_ptr key, 
 		generic_ptr value);
 
-/* find (rename to find) */
+/* find element */
 int avl_find (avl_tree_ptr tree, 
 	      generic_ptr key, 
 	      generic_dptr pvalue);
@@ -100,7 +101,7 @@ int avl_first (avl_tree_ptr tree,
 	       generic_dptr pkey, 
 	       generic_dptr pvalue);
 
-/* bigger element (key) */
+/* biggest element (key) */
 int avl_last (avl_tree_ptr tree, 
 	      generic_dptr pkey, 
 	      generic_dptr pvalue);
@@ -111,16 +112,26 @@ int avl_find_or_insert (avl_tree_ptr tree,
 			generic_tptr slot);
 
 /* iterate over all nodes with a function */
-void avl_foreach (avl_tree_ptr, void_func_ptr, int);
+void avl_foreach (avl_tree_ptr tree, 
+		  iter_func_ptr func, 
+		  int dir);
 
 /* iterator constructor */
-avl_iterator_ptr avl_iter (avl_tree_ptr, int);
+avl_iterator_ptr avl_iter (avl_tree_ptr tree, 
+			   int dir);
 
 /* iterator destructor */
 void avl_iter_free (avl_iterator_ptr);
 
 /* next (key, value) in iteration */
-int avl_iter_next (avl_iterator_ptr, generic_dptr, generic_dptr);
+int avl_iter_next (avl_iterator_ptr ,
+		   generic_dptr,
+		   generic_dptr);
+
+#ifndef NDEBUG
+/* tree check (debugging) */
+int  avl_check_tree(avl_tree_ptr tree);
+#endif
 
 #endif
 
