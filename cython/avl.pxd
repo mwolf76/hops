@@ -43,8 +43,12 @@ cdef extern from "src/avl.h":
 
     # deletion
     int avl_delete (avl_tree_ptr avl, 
-                    generic_dptr key_p, 
+                    generic_ptr key_p, 
                     generic_dptr value_p)
+    
+    int avl_delete_pair (avl_tree_ptr avl, 
+                         generic_ptr key_p, 
+                         generic_ptr value)
 
     # insertion
     int avl_insert (avl_tree_ptr tree, 

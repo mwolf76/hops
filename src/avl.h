@@ -79,8 +79,13 @@ void avl_deinit(avl_tree_ptr tree,
 
 /* deletion */
 int avl_delete (avl_tree_ptr tree, 
-		generic_dptr key_p, 
+		generic_ptr key, 
 		generic_dptr value_p);
+
+/* delete pair */
+int avl_delete_pair (avl_tree_ptr tree, 
+		     generic_ptr key, 
+		     generic_ptr value);
 
 /* insertion */
 int avl_insert (avl_tree_ptr tree, 

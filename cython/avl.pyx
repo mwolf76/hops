@@ -70,33 +70,20 @@ cdef class Avl(object):
      cdef avl.avl_tree_ptr _tree
 
      def __cinit__(self):
+         """C ctor
+         """
          self._tree = avl.avl_init(<cmp_func_ptr> cmp_callback)
          if self._tree is NULL:
             raise MemoryError()
 
      def __dealloc__(self):
+         """C dctor
+         """
          assert self._tree is not NULL
          avl.avl_deinit(self._tree, 
                         <free_func_ptr> free_callback, 
                         <free_func_ptr> free_callback)
 
-
-     # def __del__(self, object key):
-     # """__delitem__(y) <==> del T[y], del[s:e], O(log(n))
-     # """
-     #     cdef generic_ptr value = NULL
-     #     assert self._tree is not NULL
-         
-     #     if (avl_delete(self._tree,
-     #                    &key_p,
-     #                    &value_p) == 0):
-     #         return None
-
-     #     # explicit reference counting decrement
-     #     Py_DECREF(key)
-     #     Py_DECREF(value)
-
-     #     return value
 
      def __contains__(self, object key):
          """__contains__(k) -> True if T has a key k, else False, O(log(n))
@@ -298,18 +285,59 @@ cdef class Avl(object):
              pass
 
          return res
+
+     def __delitem__(self, object key):
+         """__delitem__(y) <==> del T[y], del[s:e], O(log(n))
+         """
+         cdef generic_ptr value = NULL
+         assert self._tree is not NULL
          
-     def pop(self, k, d=None):
+         if (avl_delete(self._tree,
+                        <generic_ptr> key, &value) == 0):
+             return
+
+         # explicit reference counting decrement
+         Py_DECREF(key)
+         Py_DECREF(<object> value)
+
+         return
+
+     def pop(self, key, default=None):
          """pop(k[,d]) -> v, remove specified key and return the corresponding value, O(log(n))
          """
-         pass
+         cdef generic_ptr value = NULL
+         assert self._tree is not NULL
+         
+         if (avl_delete(self._tree,
+                        <generic_ptr> key, &value) == 0):
+             return default
 
-     def popitem(self, ):
+         value_obj = <object> value
+
+         # explicit reference counting decrement
+         Py_DECREF(key)
+         Py_DECREF(value_obj)
+
+         return value_obj
+
+     def popitem(self, key, value):
          """popitem() -> (k, v), remove and return some (key, value) pair as a 2-tuple, O(log(n))
          """
-         pass
+         assert self._tree is not NULL
+         
+         if (avl_delete_pair(self._tree,
+                             <generic_ptr> key,
+                             <generic_ptr> value) == 0):
+             return None
 
-     def setdefault(self,):
+         # explicit reference counting decrement
+         Py_DECREF(key)
+         Py_DECREF(value)
+
+         return (key, value)
+
+
+     def setdefault(self, k, d=None):
          """setdefault(k[,d]) -> T.get(k, d), also set T[k]=d if k not in T, O(log(n))
          """
          pass
@@ -317,4 +345,5 @@ cdef class Avl(object):
      def update(self, E):
          """update(E) -> None. Update T from dict/iterable E, O(E*log(n))
          """
-         pass
+         for (k, v) in E.iteritems():
+             self.__setitem__(k, v)

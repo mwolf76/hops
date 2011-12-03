@@ -263,17 +263,14 @@ int avl_find_or_insert(avl_tree_ptr tree, generic_ptr key, generic_tptr slot_p)
 
 
 /**
+   TODO: review this
+
    Search for the item with key `*key_p' in `tree'.  If found, set
    `key_p' and `value_p' to point to the key and value of item, delete
    the item and return 1.  Otherwise return 0 and leave `key_p' and
    `value_p' unchanged.  
-
-   WARNING: This interface is buggy; in particular, if identical keys
-   are in the table, it is not possible to delete a particular (key,
-   value) pair.  This will be fixed either with 'handles' or a
-   separate delete function.
 */
-int avl_delete(avl_tree_ptr tree, generic_dptr key_p, generic_dptr value_p)
+int avl_delete(avl_tree_ptr tree, generic_ptr key, generic_dptr value_p)
 {
   avl_node_dptr node_p;
   avl_node_ptr node;
@@ -281,7 +278,6 @@ int avl_delete(avl_tree_ptr tree, generic_dptr key_p, generic_dptr value_p)
   avl_node_dptr stack_nodep[STACK_SIZE];
  
   int diff, stack_n = 0;
-  generic_ptr key = (*key_p);
 
   node_p = &tree->root;
 
@@ -296,9 +292,59 @@ int avl_delete(avl_tree_ptr tree, generic_dptr key_p, generic_dptr value_p)
 
   /* prepare to delete node and replace it with rightmost of left tree */
  delete_item:
-  (*key_p) = node->key;
   if (value_p != 0) (*value_p) = node->value;
 
+  if (!node->left) (*node_p) = node->right;
+  else {
+    rightmost = find_rightmost(&node->left);
+    rightmost->left = node->left;
+    rightmost->right = node->right;
+    rightmost->height = -2;     /* mark bogus height for do_rebal */
+    
+    (*node_p) = rightmost;
+    stack_nodep[stack_n++] = node_p;
+  }
+
+  free(node);
+
+  /* work our way back up, re-balancing the tree */
+  do_rebalance(stack_nodep, stack_n);
+  tree->num_entries--;
+  tree->modified = 1;
+
+  return 1;
+}
+
+/**
+   TODO: review this
+
+   Search for the item with key `*key_p' in `tree'.  If found, set
+   `key_p' and `value_p' to point to the key and value of item, delete
+   the item and return 1.  Otherwise return 0 and leave `key_p' and
+   `value_p' unchanged.  
+*/
+int avl_delete_pair(avl_tree_ptr tree, generic_ptr key, generic_ptr value_p)
+{
+  avl_node_dptr node_p;
+  avl_node_ptr node;
+  avl_node_ptr rightmost;
+  avl_node_dptr stack_nodep[STACK_SIZE];
+ 
+  int diff, stack_n = 0;
+
+  node_p = &tree->root;
+
+  /* Walk down the tree saving the path; return if not found */
+  while ((node = (*node_p))) {
+    if (! (diff = tree->cmp(key, node->key))) goto delete_item;
+
+    stack_nodep[stack_n++] = node_p;
+    node_p = (diff < 0) ? &node->left : &node->right;
+  }
+  return 0;             /* not found */
+
+  /* prepare to delete node and replace it with rightmost of left tree */
+ delete_item:
   if (!node->left) (*node_p) = node->right;
   else {
     rightmost = find_rightmost(&node->left);
