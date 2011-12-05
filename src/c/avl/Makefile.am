@@ -1,15 +1,10 @@
 AUTOMAKE_OPTIONS = subdir-objects
-
-INCLUDES = -I$(top_srcdir)/src
+INCLUDES = -I$(top_srcdir)o/src/c/
 
 PKG_H = avl.h
 PKG_C = avl.c
 
 PKG_SOURCES = $(PKG_H) $(PKG_C)
-
-utilsdir = $(includedir)/nusmv/utils
-nobase_utils_HEADERS = $(PKG_H)
-
 
 # -------------------------------------------------------
 

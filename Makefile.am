@@ -1,7 +1,5 @@
 ACLOCAL_AMFLAGS = -I m4
-
-INCLUDES = -I. -I$(top_srcdir)/src
-SUBDIRS = src cython
+SUBDIRS = src
 
 PACKAGE = $(PACKAGE_NAME)
 VERSION = $(PACKAGE_VERSION)
@@ -9,11 +7,11 @@ VERSION = $(PACKAGE_VERSION)
 AM_CPPFLAGS = -DDATADIR=\"$(datadir)\" @CPPFLAGS@
 READMES = LGPL-2.1 NEWS README
 
-lib_LTLIBRARIES = libhops.la
+# lib_LTLIBRARIES = libhops.la
 
 # The HOPS test executable
-libhops_la_SOURCES = 
-libhops_la_LIBADD = src/libavl.la
+# libhops_la_SOURCES = 
+# libhops_la_LIBADD = src/libavl.la
 # libhops__DEPENDENCIES = libhops.la
 
 # core lib for external linking:

@@ -3,7 +3,7 @@ FILES = FAQ
 EXTRA_DIST = $(FILES)
 
 all:
-	CFLAGS="-I../ -L../src/.libs" python setup.py build_ext
+	CFLAGS="-I$(top_srcdir)/src/c/ -L$(top_srcdir)/src/c/avl/.libs/" python setup.py build_ext
 
 clean:
 	@rm -f *.c

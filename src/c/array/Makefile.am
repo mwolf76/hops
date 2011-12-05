@@ -1,6 +1,5 @@
 AUTOMAKE_OPTIONS = subdir-objects
-
-INCLUDES = -I$(top_srcdir)/src
+INCLUDES = -I$(top_srcdir)/src/c/
 
 PKG_H = array.h
 PKG_C = array.c

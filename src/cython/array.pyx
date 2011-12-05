@@ -1,5 +1,5 @@
-# file: avl.pyx
-cimport avl
+# file: array.pyx
+cimport array
 
 cdef extern from "Python.h":
     cdef void Py_INCREF(obj)
@@ -11,17 +11,17 @@ cdef int cmp_callback(object a, object b):
 cdef void free_callback(object obj):
     Py_DECREF(obj)
 
-cdef class AvlForwardIterator(object):
-     cdef avl.avl_iterator_ptr _iterator
+cdef class ArrayForwardIterator(object):
+     cdef array.array_iterator_ptr _iterator
 
-     def __init__(self, Avl obj):
-         self._iterator = avl.avl_iter(obj._tree, 0)  # forward
+     def __init__(self, Array obj):
+         self._iterator = array.array_iter(obj._array, 0)  # forward
          if self._iterator is NULL:
             raise MemoryError()
 
      def __dealloc__(self):
          assert self._iterator is not NULL
-         avl.avl_iter_free(self._iterator)
+         array.array_iter_free(self._iterator)
 
      def __iter__(self):
          return self
@@ -32,23 +32,23 @@ cdef class AvlForwardIterator(object):
          cdef generic_ptr value = NULL
          assert self._iterator is not NULL
 
-         if (avl.avl_iter_next(self._iterator,
+         if (array.array_iter_next(self._iterator,
                                &key, &value) == 0):
              raise StopIteration()
 
          return (<object> key, <object> value)
 
-cdef class AvlBackwardIterator(object):
-     cdef avl.avl_iterator_ptr _iterator
+cdef class ArrayBackwardIterator(object):
+     cdef array.array_iterator_ptr _iterator
 
      def __init__(self, obj):
-         self._iterator = avl.avl_iter(<avl_tree_ptr> obj._tree, 1)  # backward
+         self._iterator = array.array_iter(<array_tree_ptr> obj._array, 1)  # backward
          if self._iterator is NULL:
             raise MemoryError()
 
      def __dealloc__(self):
          assert self._iterator is not NULL
-         avl.avl_iter_free(self._iterator)
+         array.array_iter_free(self._iterator)
 
      def __iter__(self):
          return self
@@ -59,14 +59,14 @@ cdef class AvlBackwardIterator(object):
          cdef generic_ptr value = NULL
          assert self._iterator is not NULL
 
-         if (avl.avl_iter_next(self._iterator,
+         if (array.array_iter_next(self._iterator,
                                &key, &value) == 0):
              raise StopIteration()
 
          return (<object> key, <object> value)
 
-cdef class Avl(object):
-     cdef avl.avl_tree_ptr _tree
+cdef class Array(object):
+     cdef array.array_ptr _array
 
      def __init__(self, seq=None):
          """Python ctor
@@ -87,15 +87,15 @@ cdef class Avl(object):
      def __cinit__(self):
          """C ctor
          """
-         self._tree = avl.avl_init(<cmp_func_ptr> cmp_callback)
-         if self._tree is NULL:
+         self._array = array.array_init(<cmp_func_ptr> cmp_callback)
+         if self._array is NULL:
             raise MemoryError()
 
      def __dealloc__(self):
          """C dctor
          """
-         assert self._tree is not NULL
-         avl.avl_deinit(self._tree, 
+         assert self._array is not NULL
+         array.array_deinit(self._array, 
                         <free_func_ptr> free_callback, 
                         <free_func_ptr> free_callback)
 
@@ -104,9 +104,9 @@ cdef class Avl(object):
          """__contains__(k) -> True if T has a key k, else False, O(log(n))
          """
 
-         assert self._tree is not NULL
+         assert self._array is not NULL
 
-         if (avl.avl_find(self._tree,
+         if (array.array_find(self._array,
                           <generic_ptr> key, NULL) == 1):
              return True
 
@@ -117,9 +117,9 @@ cdef class Avl(object):
          """
          cdef int res
          cdef generic_ptr value = NULL
-         assert self._tree is not NULL
+         assert self._array is not NULL
 
-         if (avl.avl_find(self._tree,
+         if (array.array_find(self._array,
                           <generic_ptr> key, 
                           &value) == 0):
              raise ValueError()
@@ -129,42 +129,42 @@ cdef class Avl(object):
      def __setitem__(self, object key, object value):
          """__setitem__(key, value) <==> T[key] = value, O(log(n))
          """
-         assert self._tree is not NULL
+         assert self._array is not NULL
 
          # explicit reference counting increment
          Py_INCREF(key)
          Py_INCREF(value)
 
-         avl.avl_insert(self._tree,
+         array.array_insert(self._array,
                         <generic_ptr> key, 
                         <generic_ptr> value)
 
      def insert(self, object key, object value=None):
          
-         assert self._tree is not NULL
+         assert self._array is not NULL
 
          # explicit reference counting increment
          Py_INCREF(key)
          Py_INCREF(value)
 
-         avl.avl_insert(self._tree,
+         array.array_insert(self._array,
                         <generic_ptr> key, 
                         <generic_ptr> value)
 
      def __len__(self):
          """__len__() <==> len(T), O(1)
          """
-         assert self._tree is not NULL
-         return avl.avl_count(self._tree)
+         assert self._array is not NULL
+         return array.array_count(self._array)
          
      def __min__(self):
          """__min__() <==> min(T), get min item (k,v) of T, O(log(n))
          """
          cdef generic_ptr key = NULL
          cdef generic_ptr value = NULL
-         assert self._tree is not NULL
+         assert self._array is not NULL
 
-         if (avl.avl_first(self._tree, &key, &value) == 0):
+         if (array.array_first(self._array, &key, &value) == 0):
              raise ValueError()
 
          return ( <object> key, <object> value )
@@ -174,9 +174,9 @@ cdef class Avl(object):
          """
          cdef generic_ptr key = NULL
          cdef generic_ptr value = NULL
-         assert self._tree is not NULL
+         assert self._array is not NULL
 
-         if (avl.avl_last(self._tree, &key, &value) == 0):
+         if (array.array_last(self._array, &key, &value) == 0):
              raise ValueError()
 
          return ( <object> key, <object> value )
@@ -205,43 +205,43 @@ cdef class Avl(object):
      def __iter__(self):
          """__iter__() <==> iter(T)
          """
-         assert self._tree is not NULL
-         return AvlForwardIterator(self)
+         assert self._array is not NULL
+         return ArrayForwardIterator(self)
 
      def __reversed__(self):
          """__reversed__() <==> reversed(T)
          """
-         assert self._tree is not NULL
-         return AvlBackwardIterator(self)
+         assert self._array is not NULL
+         return ArrayBackwardIterator(self)
 
      def clear(self):
          """clear() -> None, remove all items from T, O(n)
          """
-         assert self._tree is not NULL
+         assert self._array is not NULL
          pass
 
      def copy(self):
          """copy() -> a shallow copy of T, O(n*log(n))
          """
-         assert self._tree is not NULL
+         assert self._array is not NULL
          pass
 
      def discard(self, key):
          """discard(k) -> None, remove k from T, if k is present, O(log(n))
          """
-         assert self._tree is not NULL
+         assert self._array is not NULL
          pass
 
      def get(self, key, default=None):
          """get(k[,d]) -> T[k] if k in T, else d, O(log(n))
          """
-         assert self._tree is not NULL
+         assert self._array is not NULL
 
          cdef int res
          cdef generic_ptr value = NULL
-         assert self._tree is not NULL
+         assert self._array is not NULL
 
-         if (avl.avl_find(self._tree,
+         if (array.array_find(self._array,
                           <generic_ptr> key, 
                           &value) == 0):
              return default
@@ -251,8 +251,8 @@ cdef class Avl(object):
      def is_empty(self):
          """is_empty() -> True if len(T) == 0, O(1)
          """
-         assert self._tree is not NULL
-         return avl.avl_count(self._tree) == 0
+         assert self._array is not NULL
+         return array.array_count(self._array) == 0
 
      def items(self, reverse=False):
          """items([reverse]) -> list (k, v) items of T, O(n)
@@ -315,9 +315,9 @@ cdef class Avl(object):
          """__delitem__(y) <==> del T[y], del[s:e], O(log(n))
          """
          cdef generic_ptr value = NULL
-         assert self._tree is not NULL
+         assert self._array is not NULL
          
-         if (avl_delete(self._tree,
+         if (array_delete(self._array,
                         <generic_ptr> key, &value) == 0):
              return
 
@@ -331,9 +331,9 @@ cdef class Avl(object):
          """pop(k[,d]) -> v, remove specified key and return the corresponding value, O(log(n))
          """
          cdef generic_ptr value = NULL
-         assert self._tree is not NULL
+         assert self._array is not NULL
          
-         if (avl_delete(self._tree,
+         if (array_delete(self._array,
                         <generic_ptr> key, &value) == 0):
              return default
 
@@ -348,9 +348,9 @@ cdef class Avl(object):
      def popitem(self, key, value):
          """popitem() -> (k, v), remove and return some (key, value) pair as a 2-tuple, O(log(n))
          """
-         assert self._tree is not NULL
+         assert self._array is not NULL
          
-         if (avl_delete_pair(self._tree,
+         if (array_delete_pair(self._array,
                              <generic_ptr> key,
                              <generic_ptr> value) == 0):
              return None

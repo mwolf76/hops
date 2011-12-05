@@ -11,7 +11,7 @@ array_ptr array_init(unsigned size, unsigned number)
   size_t fullsize;
   array_ptr array;
   
-  if (! array = (array_ptr)(malloc(sizeof(array_t)))) 
+  if (! (array = (array_ptr)(malloc(sizeof(array_t)))))
     return NULL;
 
   array->num = 0;
@@ -32,25 +32,25 @@ int array_insert(array_ptr array, unsigned index, generic_ptr buf)
   int res = ARRAY_OK;
   assert(array);
 
-  size_t ofs = ;
   if ((index >= array->n_size) && 
       ((res = array_resize(array, 1 + index)) != ARRAY_OK))
     return res;
 
-  memcpy(array->space + array->index, buf, 
-	 sizeof(generic_ptr));
+  memcpy(array->space + index, buf, sizeof(generic_ptr));
   if (index >= array->num) array->num = index + 1;
   
   return ARRAY_OK;
 }
 
 
-int array_deinit(array_ptr array)
+void array_deinit(array_ptr array)
 {
   assert(array);
 
   free(array->space);
   free(array);
+
+  
 }
 
 
@@ -129,10 +129,10 @@ int array_deinit(array_ptr array)
 /* } */
 
 
+
 int array_resize(array_ptr array, unsigned new_size)
 {
   unsigned old_size;
-  char *ofs; 
   generic_dptr newspace;
 
   /* Note that this is not an exported function, and does not check if
@@ -163,11 +163,11 @@ void array_sort(array_ptr array, cmp_func_ptr compare)
 void array_uniq(array_ptr array, cmp_func_ptr compare, free_func_ptr free_func)
 {
   int i, last;
-  char *dest, *obj1, *obj2;
+  generic_ptr dest, obj1, obj2;
 
   dest = array->space;
   obj1 = array->space;
-  obj2 = array->space + sizeof(generic_ptr);
+  obj2 = array->space + 1;
   last = array->num;
   
   for(i = 1; i < last; i++) {
@@ -175,14 +175,14 @@ void array_uniq(array_ptr array, cmp_func_ptr compare, free_func_ptr free_func)
       if (dest != obj1) {
 	memcpy(dest, obj1, sizeof(generic_ptr));
       }
-      dest += sizeof(generic_ptr);
+      dest ++ ;
     } 
     else {
-      if (free_func != 0) (*free_func)(obj1);
+      if (free_func != NULL) (*free_func)(obj1);
       array->num--;
     }
-    obj1 += sizeof(generic_ptr);
-    obj2 += sizeof(generic_ptr);
+    obj1 ++ ;
+    obj2 ++ ;
   }
 
   if (dest != obj1) {

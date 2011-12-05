@@ -121,8 +121,11 @@ AC_CHECK_FUNCS([floor memmove memset pow strcasecmp strchr \
 		mkstemp mktemp tmpnam getenv setvbuf system popen isatty])
 
 AC_CONFIG_FILES([Makefile
-                 src/Makefile
-		 cython/Makefile
+		 src/Makefile
+                 src/c/Makefile
+		 src/c/avl/Makefile
+		 src/c/array/Makefile
+		 src/cython/Makefile
 		 hops.pc])
 
 AC_OUTPUT

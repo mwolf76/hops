@@ -660,8 +660,8 @@ do_check_tree(avl_node_ptr node, cmp_func_ptr compare, int* error)
   bal = r_height - l_height;
     
   if (comp_height != node->height) {
-    (void) printf("Bad height for 0x%p: computed=%d stored=%d\n",
-                  (void*) node, comp_height, node->height);
+    printf("Bad height for 0x%p: computed=%d stored=%d\n",
+	   (void*) node, comp_height, node->height);
     ++(*error);
   }
 

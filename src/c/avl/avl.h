@@ -11,7 +11,7 @@ typedef avl_node* avl_node_ptr;
 typedef avl_node** avl_node_dptr;
 typedef avl_node*** avl_node_tptr;
 
-typedef struct avl_node_struct {
+struct avl_node_struct {
   avl_node_ptr left;
   avl_node_ptr right;
 
@@ -19,9 +19,11 @@ typedef struct avl_node_struct {
   generic_ptr value;
 
   int height;
-} avl_tree;
+};
 
+typedef struct avl_tree_struct avl_tree;
 typedef avl_tree* avl_tree_ptr;
+
 struct avl_tree_struct {
 
   /* the avl root */
@@ -34,8 +36,12 @@ struct avl_tree_struct {
   int modified;
 };
 
+
+
+
 typedef struct avl_iterator_struct avl_iterator;
 typedef avl_iterator* avl_iterator_ptr;
+
 struct avl_iterator_struct {
     avl_tree_ptr tree;
     avl_node_dptr nodelist;

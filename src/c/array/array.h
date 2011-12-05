@@ -23,39 +23,42 @@ typedef struct array_iter_t {
 typedef array_iter_t* array_iter_ptr;
 
 /* ctor */
-array_ptr array_init(unsigned size, unsigned number)
+array_ptr array_init(unsigned size, unsigned number);
 
 /* dctor */
-int array_deinit (array_ptr array);
+void array_deinit (array_ptr array);
 
 /* getter */
 generic_ptr inline array_fetch(array_ptr array, unsigned index)
 { 
   if (index >= array->num) return (generic_ptr)(ARRAY_OUT_OF_BOUNDS);
-  return * (generic_ptr) array->space + index * sizeof(generic_ptr) ); 
+  return * (array->space + index );
 }
 
 /* setter */
-int array_insert(array_ptr array, unsigned index, generic_ptr buf);
+int array_insert(array_ptr array, unsigned index, generic_ptr obj);
 
-inline unsigned array_n(array_ptr array)
+inline unsigned array_count(const array_ptr array)
 { return array->num; }
 
 inline void
-array_insert_last(array_ptr array, generic_ptr buf)
-{ array_insert(array, array->num, buf); }
+array_insert_last(array_ptr array, generic_ptr obj)
+{ array_insert(array, array->num, obj); }
+
+inline generic_ptr array_fetch_first(array_ptr array)      
+{ return array_fetch(array, 0); }
 
 inline generic_ptr array_fetch_last(array_ptr array)      
-{ array_fetch(array, ((array)->num)-1); }
+{ return array_fetch(array, ((array)->num)-1); }
 
-int array_resize(array_ptr array, int new_size);
+int array_resize(array_ptr array, unsigned new_size);
 
 /* iterators */
-inline array_iter_ptr array_iter(array_ptr array)
+inline array_iter_ptr array_iter(array_ptr array, int dir)
 {
   array_iter_ptr iter;
   
-  if (! iter = (array_ptr)(malloc(sizeof(array_iter)))) 
+  if (! (iter = (array_iter_ptr)(malloc(sizeof(array_iter)))))
     return NULL;
 
   iter->array = array;
@@ -69,12 +72,11 @@ inline void
 array_iter_deinit(array_iter_ptr iter)
 { free(iter); }
 
-inline int 
-array_iter_has_next(array_iter_ptr iter)
-{ return iter->array->num < iter->next; }
+inline int array_iter_next(array_iter_ptr iter, generic_dptr next)
+{ 
+  if (iter->next == 
 
-inline generic_ptr array_iter_next(array_iter_ptr iter)
-{ return iter->array->space + }
+return *( iter->array->space + ( iter->next ++ ) ); }
 
 
 /* aggregate functions */
@@ -85,3 +87,4 @@ inline generic_ptr array_iter_next(array_iter_ptr iter)
 /* void array_uniq (array_ptr array, cmp_func_ptr compare, free_func_ptr free); */
 
 
+#endif

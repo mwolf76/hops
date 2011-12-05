@@ -11,5 +11,8 @@ setup(
         Extension("avl", ["avl.pyx"], 
                   libraries=["avl"]
         )
+        Extension("array", ["array.pyx"], 
+                  libraries=["array"]
+        )
     ]
 )

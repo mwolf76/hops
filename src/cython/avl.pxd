@@ -1,6 +1,6 @@
 # file: avl.pxd
 
-cdef extern from "src/avl.h":
+cdef extern from "avl/avl.h":
 
     ctypedef struct avl_tree_struct:
         pass
