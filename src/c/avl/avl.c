@@ -3,14 +3,7 @@
  * (c) 2011 Marco Pensallorto <marco DOT pensallorto AT gmail DOT com>
  *
  **/
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "avl.h"
-
-#define MAX(a,b)                                        \
-  ((a) > (b) ? (a) : (b))
 
 #define HEIGHT(node)                                    \
   ((!node) ? -1 : (node)->height)

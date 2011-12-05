@@ -14,8 +14,8 @@ The library should be equipped with a complete test suite covering both the C an
 
 A reasonable set of data structures would be:
 
-1. Dynamic Arrays
-2. AVL self-balancing trees
+1. AVL self-balancing trees (done)
+2. Dynamic Arrays 
 3. Hash tables
 4. Lists, Stacks and Queues
 5. Priority Queues

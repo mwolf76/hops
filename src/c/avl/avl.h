@@ -4,21 +4,14 @@
 #define AVL_ITER_FORWARD 	0
 #define AVL_ITER_BACKWARD 	1
 
-
-/* -- Type definitions ------------------------------------------------------ */
-typedef void* generic_ptr;
-typedef void** generic_dptr;
-typedef void*** generic_tptr;
-typedef void (*free_func_ptr)(generic_ptr data);
-typedef void (*iter_func_ptr)(generic_ptr key, generic_ptr value);
-typedef int (*cmp_func_ptr)(generic_ptr a, generic_ptr b);
+#include "common.h"
 
 typedef struct avl_node_struct avl_node;
 typedef avl_node* avl_node_ptr;
 typedef avl_node** avl_node_dptr;
 typedef avl_node*** avl_node_tptr;
 
-struct avl_node_struct {
+typedef struct avl_node_struct {
   avl_node_ptr left;
   avl_node_ptr right;
 
@@ -26,9 +19,8 @@ struct avl_node_struct {
   generic_ptr value;
 
   int height;
-};
+} avl_tree;
 
-typedef struct avl_tree_struct avl_tree;
 typedef avl_tree* avl_tree_ptr;
 struct avl_tree_struct {
 
