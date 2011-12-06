@@ -39,59 +39,19 @@ array_ptr array_init(unsigned size, cmp_func_ptr cmp, free_func_ptr free);
 void array_deinit (array_ptr array);
 
 /* getter */
-int inline
-array_fetch(array_ptr array, unsigned index, generic_dptr out)
-{
-  if (index >= array->num) return ARRAY_OUT_OF_BOUNDS;
-
-  (*out) = *(array->space + index );
-  return ARRAY_OK;
-}
+int array_fetch(array_ptr array, unsigned index, generic_dptr out);
 
 /* setter */
 int array_insert(array_ptr array, unsigned index, generic_ptr obj);
 
-inline unsigned array_count(const array_ptr array)
-{ return array->num; }
 
 /* iterators */
-inline array_iterator_ptr array_iter(array_ptr array, int dir)
-{
-  array_iterator_ptr iter;
+array_iterator_ptr array_iter(array_ptr array, int dir);
 
-  if (! (iter = (array_iterator_ptr)(malloc(sizeof(array_iter)))))
-    return NULL;
+unsigned array_count(const array_ptr array);
 
-  iter->dir = dir;
-  if (dir == ARRAY_ITER_FORWARD) {
-    iter->next = array->space;
-    iter->last = array->space + array->num;
-  }
+void array_iter_deinit(array_iterator_ptr iter);
 
-  else if (dir == ARRAY_ITER_BACKWARD) {
-    iter->next = array->space + array->num -1;
-    iter->last = array->space;
-  }
-
-  else assert(0); /* unexpected */
-
-  return iter;
-}
-
-inline void
-array_iter_deinit(array_iterator_ptr iter)
-{ free(iter); }
-
-inline int
-array_iter_next(array_iterator_ptr iter, generic_dptr next)
-{
-  if (iter->next == iter->last) return 0;
-
-  (*next) = (*iter->next),
-    iter->next += iter->dir;
-
-  return 1;
-}
 
 /* -- aggregate functions --------------------------------------------------- */
 array_ptr array_dup(array_ptr old);

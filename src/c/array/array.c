@@ -30,6 +30,15 @@ array_ptr array_init(unsigned size, cmp_func_ptr cmp, free_func_ptr free)
   return array;
 }
 
+int array_fetch(array_ptr array, unsigned index, generic_dptr out)
+{
+  if (index >= array->num) return ARRAY_OUT_OF_BOUNDS;
+
+  (*out) = *(array->space + index );
+  return ARRAY_OK;
+}
+
+
 int array_insert(array_ptr array, unsigned index, generic_ptr buf)
 {
   int res = ARRAY_OK;
@@ -43,6 +52,27 @@ int array_insert(array_ptr array, unsigned index, generic_ptr buf)
   if (index >= array->num) array->num = index + 1;
 
   return ARRAY_OK;
+}
+
+unsigned array_count(const array_ptr array)
+{
+  return array->num;
+}
+
+int array_iter_next(array_iterator_ptr iter, generic_dptr next)
+{
+  if (iter->next == iter->last) return 0;
+
+  (*next) = (*iter->next),
+    iter->next += iter->dir;
+
+  return 1;
+}
+
+
+void array_iter_deinit(array_iterator_ptr iter)
+{
+  free(iter);
 }
 
 
