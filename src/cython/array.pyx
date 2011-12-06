@@ -28,15 +28,15 @@ cdef class ArrayForwardIterator(object):
 
      def __next__(self):
          cdef int res
-         cdef generic_ptr key = NULL
-         cdef generic_ptr value = NULL
+         cdef generic_ptr item = NULL
+
          assert self._iterator is not NULL
 
          if (array.array_iter_next(self._iterator,
-                               &key) == 0):
+                               &item) == 0):
              raise StopIteration()
 
-         return (<object> key, <object> value)
+         return (<object> item)
 
 cdef class ArrayBackwardIterator(object):
      cdef array.array_iterator_ptr _iterator
@@ -55,15 +55,14 @@ cdef class ArrayBackwardIterator(object):
 
      def __next__(self):
          cdef int res
-         cdef generic_ptr key = NULL
-         cdef generic_ptr value = NULL
+         cdef generic_ptr item = NULL
          assert self._iterator is not NULL
 
          if (array.array_iter_next(self._iterator,
-                               &key) == 0):
+                               &item) == 0):
              raise StopIteration()
 
-         return (<object> key)
+         return (<object> item)
 
 cdef class Array(object):
      cdef array.array_ptr _array
