@@ -6,16 +6,19 @@
 #include "array.h"
 
 /* Allocate an array of 'number' elements,each of which require 'size' bytes */
-array_ptr array_init(unsigned size, unsigned number)
+array_ptr array_init(unsigned size, cmp_func_ptr cmp, free_func_ptr free)
 {
   size_t fullsize;
   array_ptr array;
-  
+
   if (! (array = (array_ptr)(malloc(sizeof(array_t)))))
     return NULL;
 
+  array->cmp = cmp;
+  array->free = free;
+
   array->num = 0;
-  array->n_size = number;
+  array->n_size = MAX(ARRAY_INIT_SIZE, size);
 
   fullsize = array->n_size * sizeof(generic_ptr);
   if (! (array->space = (generic_dptr) malloc(fullsize))) {
@@ -32,13 +35,13 @@ int array_insert(array_ptr array, unsigned index, generic_ptr buf)
   int res = ARRAY_OK;
   assert(array);
 
-  if ((index >= array->n_size) && 
+  if ((index >= array->n_size) &&
       ((res = array_resize(array, 1 + index)) != ARRAY_OK))
     return res;
 
   memcpy(array->space + index, buf, sizeof(generic_ptr));
   if (index >= array->num) array->num = index + 1;
-  
+
   return ARRAY_OK;
 }
 
@@ -46,11 +49,18 @@ int array_insert(array_ptr array, unsigned index, generic_ptr buf)
 void array_deinit(array_ptr array)
 {
   assert(array);
+  unsigned i;
+  generic_dptr elem;
+
+
+  /* Free all non-null objects */
+  for (i=0, elem = array->space;
+       i < array->n_size; i ++, elem ++) {
+    if (*elem) array->free(*elem);
+  }
 
   free(array->space);
   free(array);
-
-  
 }
 
 
@@ -66,7 +76,7 @@ void array_deinit(array_ptr array)
 /*   new->n_size = old->num; */
 /*   new->obj_size = old->obj_size; */
 /*   new->index = -new->obj_size; */
-  
+
 /*   fullsize = old->n_size * old->obj_size; */
 /*   if (! (new->space = malloc(fullsize))) */
 /*     return NULL; */
@@ -94,7 +104,7 @@ void array_deinit(array_ptr array)
 /*   pos = array1->space + array1->num * array1->obj_size; */
 /*   memcpy(pos, array2->space, array2->num * array2->obj_size); */
 /*   array1->num += array2->num; */
-  
+
 /*   return 1; */
 /* } */
 
@@ -115,7 +125,7 @@ void array_deinit(array_ptr array)
 /*   array->n_size = array->num; */
 /*   sizeof(generic_ptr) = array1->obj_size; */
 /*   array->index = -sizeof(generic_ptr); */
-  
+
 /*   if (! (array->space = malloc(array->n_size * sizeof(generic_ptr)))) { */
 /*     free(array); */
 /*     return NULL; */
@@ -123,7 +133,7 @@ void array_deinit(array_ptr array)
 
 /*   memcpy(array->space, array1->space, array1->num * array1->obj_size); */
 /*   pos = array->space + array1->num * array1->obj_size; */
-  
+
 /*   memcpy(pos, array2->space, array2->num * array2->obj_size); */
 /*   return array; */
 /* } */
@@ -135,22 +145,20 @@ int array_resize(array_ptr array, unsigned new_size)
   unsigned old_size;
   generic_dptr newspace;
 
-  /* Note that this is not an exported function, and does not check if
-     the array is locked since that is already done by the caller. */
   old_size = array->n_size;
   array->n_size = MAX(array->n_size * 2, new_size);
-  
+
   if (! (newspace = \
-	 (generic_dptr) realloc(array->space, 
+	 (generic_dptr) realloc(array->space,
 				array->n_size * sizeof(generic_ptr)))) {
     array->n_size = old_size;
     return ARRAY_OUT_OF_MEM;
-  } 
-  
+  }
+
   array->space = newspace;
-  memset(array->space + old_size * sizeof(generic_ptr), 0, 
+  memset(array->space + old_size * sizeof(generic_ptr), 0,
 	 (array->n_size - old_size) * sizeof(generic_ptr));
-  
+
   return ARRAY_OK;
 }
 
@@ -169,14 +177,14 @@ void array_uniq(array_ptr array, cmp_func_ptr compare, free_func_ptr free_func)
   obj1 = array->space;
   obj2 = array->space + 1;
   last = array->num;
-  
+
   for(i = 1; i < last; i++) {
     if ((*compare)((char **) obj1, (char **) obj2) != 0) {
       if (dest != obj1) {
 	memcpy(dest, obj1, sizeof(generic_ptr));
       }
       dest ++ ;
-    } 
+    }
     else {
       if (free_func != NULL) (*free_func)(obj1);
       array->num--;

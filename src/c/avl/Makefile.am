@@ -1,5 +1,5 @@
 AUTOMAKE_OPTIONS = subdir-objects
-INCLUDES = -I$(top_srcdir)o/src/c/
+INCLUDES = -I$(top_srcdir)/src/c/
 
 PKG_H = avl.h
 PKG_C = avl.c

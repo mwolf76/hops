@@ -15,17 +15,17 @@ cdef class ArrayForwardIterator(object):
      cdef array.array_iterator_ptr _iterator
 
      def __init__(self, Array obj):
-         self._iterator = array.array_iter(obj._array, 0)  # forward
+         self._iterator = array.array_iter(obj._array, 1)  # forward
          if self._iterator is NULL:
             raise MemoryError()
 
      def __dealloc__(self):
          assert self._iterator is not NULL
-         array.array_iter_free(self._iterator)
+         array.array_iter_deinit(self._iterator)
 
      def __iter__(self):
          return self
-     
+
      def __next__(self):
          cdef int res
          cdef generic_ptr key = NULL
@@ -33,7 +33,7 @@ cdef class ArrayForwardIterator(object):
          assert self._iterator is not NULL
 
          if (array.array_iter_next(self._iterator,
-                               &key, &value) == 0):
+                               &key) == 0):
              raise StopIteration()
 
          return (<object> key, <object> value)
@@ -41,18 +41,18 @@ cdef class ArrayForwardIterator(object):
 cdef class ArrayBackwardIterator(object):
      cdef array.array_iterator_ptr _iterator
 
-     def __init__(self, obj):
-         self._iterator = array.array_iter(<array_tree_ptr> obj._array, 1)  # backward
+     def __init__(self, Array obj):
+         self._iterator = array.array_iter(obj._array, -1)  # backward
          if self._iterator is NULL:
             raise MemoryError()
 
      def __dealloc__(self):
          assert self._iterator is not NULL
-         array.array_iter_free(self._iterator)
+         array.array_iter_deinit(self._iterator)
 
      def __iter__(self):
          return self
-     
+
      def __next__(self):
          cdef int res
          cdef generic_ptr key = NULL
@@ -60,10 +60,10 @@ cdef class ArrayBackwardIterator(object):
          assert self._iterator is not NULL
 
          if (array.array_iter_next(self._iterator,
-                               &key, &value) == 0):
+                               &key) == 0):
              raise StopIteration()
 
-         return (<object> key, <object> value)
+         return (<object> key)
 
 cdef class Array(object):
      cdef array.array_ptr _array
@@ -87,7 +87,10 @@ cdef class Array(object):
      def __cinit__(self):
          """C ctor
          """
-         self._array = array.array_init(<cmp_func_ptr> cmp_callback)
+         self._array = array.array_init(0,
+                                        <cmp_func_ptr> cmp_callback,
+                                        <free_func_ptr> free_callback)
+
          if self._array is NULL:
             raise MemoryError()
 
@@ -95,9 +98,7 @@ cdef class Array(object):
          """C dctor
          """
          assert self._array is not NULL
-         array.array_deinit(self._array, 
-                        <free_func_ptr> free_callback, 
-                        <free_func_ptr> free_callback)
+         array.array_deinit(self._array)
 
 
      def __contains__(self, object key):
@@ -120,43 +121,27 @@ cdef class Array(object):
          assert self._array is not NULL
 
          if (array.array_find(self._array,
-                          <generic_ptr> key, 
+                          <generic_ptr> key,
                           &value) == 0):
              raise ValueError()
 
          return <object> value
 
-     def __setitem__(self, object key, object value):
+     def __setitem__(self, unsigned ndx, object value):
          """__setitem__(key, value) <==> T[key] = value, O(log(n))
          """
          assert self._array is not NULL
 
          # explicit reference counting increment
-         Py_INCREF(key)
          Py_INCREF(value)
-
-         array.array_insert(self._array,
-                        <generic_ptr> key, 
-                        <generic_ptr> value)
-
-     def insert(self, object key, object value=None):
-         
-         assert self._array is not NULL
-
-         # explicit reference counting increment
-         Py_INCREF(key)
-         Py_INCREF(value)
-
-         array.array_insert(self._array,
-                        <generic_ptr> key, 
-                        <generic_ptr> value)
+         array.array_insert(self._array, ndx, <generic_ptr> value)
 
      def __len__(self):
          """__len__() <==> len(T), O(1)
          """
          assert self._array is not NULL
          return array.array_count(self._array)
-         
+
      def __min__(self):
          """__min__() <==> min(T), get min item (k,v) of T, O(log(n))
          """
@@ -191,7 +176,7 @@ cdef class Array(object):
          """__or__(other) <==> T | other, union
          """
          pass
-     
+
      def __sub__(self, other):
          """__sub__(other) <==> T - other, difference
          """
@@ -214,39 +199,56 @@ cdef class Array(object):
          assert self._array is not NULL
          return ArrayBackwardIterator(self)
 
-     def clear(self):
-         """clear() -> None, remove all items from T, O(n)
+     def append(self, object obj):
+         """a.append(object) -- append object to end
          """
-         assert self._array is not NULL
          pass
 
-     def copy(self):
-         """copy() -> a shallow copy of T, O(n*log(n))
+     def count(self, object value):
+         """a.count(value) -> integer -- return number of occurrences of value
          """
-         assert self._array is not NULL
          pass
 
-     def discard(self, key):
-         """discard(k) -> None, remove k from T, if k is present, O(log(n))
+     def extend(self, object iterable):
+         """a.extend(iterable) -- extend list by appending elements from the iterable
          """
-         assert self._array is not NULL
          pass
 
-     def get(self, key, default=None):
-         """get(k[,d]) -> T[k] if k in T, else d, O(log(n))
+     def index(self, object obj):
+         """a.index(value, [start, [stop]]) -> integer -- return first
+         index of value.  Raises ValueError if the value is not
+         present.
          """
-         assert self._array is not NULL
+         pass
 
-         cdef int res
-         cdef generic_ptr value = NULL
-         assert self._array is not NULL
+     def insert(self, unsigned index, object obj):
+         """a.insert(index, object) -- insert object before index
+         """
+         pass
 
-         if (array.array_find(self._array,
-                          <generic_ptr> key, 
-                          &value) == 0):
-             return default
+     def pop(self, index=None):
+         """L.pop([index]) -> item -- remove and return item at index
+         (default last).  Raises IndexError if list is empty or
+         index is out of range.
+         """
+         pass
 
-         return <object> value
+     def remove(self, value):
+         """L.remove(value) -- remove first occurrence of value.
+         Raises ValueError if the value is not present.
+         """
+         pass
+
+     def reverse(self, ):
+         """L.reverse() -- reverse *IN PLACE*
+         """
+         pass
+
+     def sort(self, cmp=None, reverse=False):
+         """L.sort(cmp=None, key=None, reverse=False) -- stable sort
+         *IN PLACE*; cmp(x, y) -> -1, 0, 1
+         """
+         pass
 
      def is_empty(self):
          """is_empty() -> True if len(T) == 0, O(1)
@@ -254,69 +256,12 @@ cdef class Array(object):
          assert self._array is not NULL
          return array.array_count(self._array) == 0
 
-     def items(self, reverse=False):
-         """items([reverse]) -> list (k, v) items of T, O(n)
-         """
-         res = []
-
-         if not reverse:
-             iter_ = iter(self)
-         else:
-             iter_ = reversed(self)
-
-         try:
-             while True:
-                 res.append(iter_.next())
-         
-         except StopIteration:
-             pass
-
-         return res
-             
-     def keys(self, reverse=False):
-         """keys([reverse]) -> list for keys of T, O(n)
-         """
-         res = []
-
-         if not reverse:
-             iter_ = iter(self)
-         else:
-             iter_ = reversed(self)
-
-         try:
-             while True:
-                 res.append(iter_.next()[0])
-         
-         except StopIteration:
-             pass
-
-         return res
-             
-     def values(self, reverse=False):
-         """values([reverse]) -> generator for values of T, O(n)
-         """
-         res = []
-
-         if not reverse:
-             iter_ = iter(self)
-         else:
-             iter_ = reversed(self)
-
-         try:
-             while True:
-                 res.append(iter_.next()[1])
-         
-         except StopIteration:
-             pass
-
-         return res
-
      def __delitem__(self, object key):
          """__delitem__(y) <==> del T[y], del[s:e], O(log(n))
          """
          cdef generic_ptr value = NULL
          assert self._array is not NULL
-         
+
          if (array_delete(self._array,
                         <generic_ptr> key, &value) == 0):
              return
@@ -327,48 +272,31 @@ cdef class Array(object):
 
          return
 
-     def pop(self, key, default=None):
-         """pop(k[,d]) -> v, remove specified key and return the corresponding value, O(log(n))
-         """
-         cdef generic_ptr value = NULL
-         assert self._array is not NULL
-         
-         if (array_delete(self._array,
-                        <generic_ptr> key, &value) == 0):
-             return default
+     # def pop(self, key, default=None):
+     #     """pop(k[,d]) -> v, remove specified key and return the corresponding value, O(log(n))
+     #     """
+     #     cdef generic_ptr value = NULL
+     #     assert self._array is not NULL
 
-         value_obj = <object> value
+     #     if (array_delete(self._array,
+     #                    <generic_ptr> key, &value) == 0):
+     #         return default
 
-         # explicit reference counting decrement
-         Py_DECREF(key)
-         Py_DECREF(value_obj)
+     #     value_obj = <object> value
 
-         return value_obj
+     #     # explicit reference counting decrement
+     #     Py_DECREF(key)
+     #     Py_DECREF(value_obj)
 
-     def popitem(self, key, value):
-         """popitem() -> (k, v), remove and return some (key, value) pair as a 2-tuple, O(log(n))
-         """
-         assert self._array is not NULL
-         
-         if (array_delete_pair(self._array,
-                             <generic_ptr> key,
-                             <generic_ptr> value) == 0):
-             return None
+     #     return value_obj
 
-         # explicit reference counting decrement
-         Py_DECREF(key)
-         Py_DECREF(value)
+     # def setdefault(self, k, d=None):
+     #     """setdefault(k[,d]) -> T.get(k, d), also set T[k]=d if k not in T, O(log(n))
+     #     """
+     #     pass
 
-         return (key, value)
-
-
-     def setdefault(self, k, d=None):
-         """setdefault(k[,d]) -> T.get(k, d), also set T[k]=d if k not in T, O(log(n))
-         """
-         pass
-
-     def update(self, E):
-         """update(E) -> None. Update T from dict/iterable E, O(E*log(n))
-         """
-         for (k, v) in E.iteritems():
-             self.__setitem__(k, v)
+     # def update(self, E):
+     #     """update(E) -> None. Update T from dict/iterable E, O(E*log(n))
+     #     """
+     #     for (k, v) in E.iteritems():
+     #         self.__setitem__(k, v)

@@ -8,10 +8,10 @@ setup(
     },
 
     ext_modules = [
-        Extension("avl", ["avl.pyx"], 
+        Extension("avl", ["avl.pyx"],
                   libraries=["avl"]
-        )
-        Extension("array", ["array.pyx"], 
+        ),
+        Extension("array", ["array.pyx"],
                   libraries=["array"]
         )
     ]
