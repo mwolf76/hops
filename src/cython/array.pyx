@@ -86,7 +86,7 @@ cdef class Array(object):
      def __cinit__(self):
          """C ctor
          """
-         self._array = array.array_init(0,
+         self._array = array.array_init(0, # pick default initial size
                                         <cmp_func_ptr> cmp_callback,
                                         <free_func_ptr> free_callback)
 
@@ -107,21 +107,20 @@ cdef class Array(object):
          assert self._array is not NULL
 
          if (array.array_find(self._array,
-                          <generic_ptr> key, NULL) == 1):
-             return True
+                              <generic_ptr> key) == -1):
+             return False
 
-         return False
+         return True
 
-     def __getitem__(self, object key):
+     def __getitem__(self, unsigned ndx):
          """__getitem__(y) <==> T[y], T[s:e], O(log(n))
          """
          cdef int res
          cdef generic_ptr value = NULL
          assert self._array is not NULL
 
-         if (array.array_find(self._array,
-                          <generic_ptr> key,
-                          &value) == 0):
+         if (array.array_fetch(self._array, ndx,
+                               &value) != 0):
              raise ValueError()
 
          return <object> value
@@ -133,13 +132,14 @@ cdef class Array(object):
 
          # explicit reference counting increment
          Py_INCREF(value)
-         array.array_insert(self._array, ndx, <generic_ptr> value)
+         array.array_insert(self._array, ndx,
+                            <generic_ptr> value)
 
      def __len__(self):
          """__len__() <==> len(T), O(1)
          """
          assert self._array is not NULL
-         return array.array_count(self._array)
+         return array.array_n(self._array)
 
      def __min__(self):
          """__min__() <==> min(T), get min item (k,v) of T, O(log(n))
@@ -253,7 +253,7 @@ cdef class Array(object):
          """is_empty() -> True if len(T) == 0, O(1)
          """
          assert self._array is not NULL
-         return array.array_count(self._array) == 0
+         return array.array_n(self._array) == 0
 
      def __delitem__(self, object key):
          """__delitem__(y) <==> del T[y], del[s:e], O(log(n))

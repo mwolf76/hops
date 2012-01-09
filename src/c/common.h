@@ -14,10 +14,11 @@ typedef void** generic_dptr;
 typedef void*** generic_tptr;
 
 /* function pointer types */
-typedef void (*free_func_ptr)(void* data);
-typedef void (*iter_func_ptr)(void* key, void* value);
+typedef void (*free_func_ptr)(generic_ptr data);
+typedef void (*iter_func_ptr)(generic_ptr key, generic_ptr value);
 
-typedef int (*cmp_func_ptr)(const void* a, const void* b);
+typedef int (*hash_func_ptr)(const generic_ptr a);
+typedef int (*cmp_func_ptr)(const generic_ptr a, generic_ptr b); /* 0 -> equal */
 
 /* -- Macros ---------------------------------------------------------------- */
 #define MAX(a,b)				                               \

@@ -30,6 +30,23 @@ array_ptr array_init(unsigned size, cmp_func_ptr cmp, free_func_ptr free)
   return array;
 }
 
+
+int array_find(array_ptr array, generic_ptr key)
+{
+  unsigned i;
+  generic_dptr elem;
+
+  /* Scans for key */
+  for (i=0, elem = array->space;
+       i < array->n_size; i ++, elem ++) {
+
+    if ((*elem) && (! array->cmp(*elem, key)))
+      return i;
+  }
+
+  return -1;
+}
+
 int array_fetch(array_ptr array, unsigned index, generic_dptr out)
 {
   if (index >= array->num) return ARRAY_OUT_OF_BOUNDS;
@@ -54,9 +71,49 @@ int array_insert(array_ptr array, unsigned index, generic_ptr buf)
   return ARRAY_OK;
 }
 
-unsigned array_count(const array_ptr array)
+// ????
+/* int array_delete(array_ptr array, unsigned index, generic_dptr item_p) */
+/* { */
+/*   generic_ptr elem; */
+/*   int res = ARRAY_OK; */
+/*   assert(array); */
+
+/*   if ((index >= array->n_size) && */
+/*       ((res = array_resize(array, 1 + index)) != ARRAY_OK)) */
+/*     return res; */
+
+/*   elem = *(array->space + index); */
+/*   if (!elem) return 0; /\* not found, nothing to delete *\/ */
+
+/*   (*item_p) = elem; */
+
+/*   memcpy(array->space + index, buf, sizeof(generic_ptr)); */
+/*   if (index >= array->num) array->num = index + 1; */
+
+/*   return ARRAY_OK; */
+
+/* } */
+
+
+unsigned array_n(const array_ptr array)
 {
   return array->num;
+}
+
+unsigned array_count(const array_ptr array, generic_ptr key)
+{
+  unsigned res = 0, i;
+  generic_dptr elem;
+
+  /* Scans for key */
+  for (i=0, elem = array->space;
+       i < array->n_size; i ++, elem ++) {
+
+    if ((*elem) && (! array->cmp(*elem, key)))
+      res ++ ;
+  }
+
+  return res;
 }
 
 int array_iter_next(array_iterator_ptr iter, generic_dptr next)

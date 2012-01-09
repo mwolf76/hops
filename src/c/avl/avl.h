@@ -36,9 +36,6 @@ struct avl_tree_struct {
   int modified;
 };
 
-
-
-
 typedef struct avl_iterator_struct avl_iterator;
 typedef avl_iterator* avl_iterator_ptr;
 
@@ -58,7 +55,7 @@ struct avl_iterator_struct {
 /**
    Generate over all items in an avl-tree.  This macro iterator
    combines avl_init_gen(), avl_gen(), and avl_free_gen() into a
-   single statement iterator.x 
+   single statement iterator.x
 */
 #define avl_foreach_item(avl, iter, dir, key_p, value_p) 	              \
   for(iter = avl_iter(avl, dir);					      \
@@ -71,52 +68,52 @@ struct avl_iterator_struct {
 avl_tree_ptr avl_init(cmp_func_ptr cmp);
 
 /* destructor */
-void avl_deinit(avl_tree_ptr tree, 
-		free_func_ptr free_key, 
+void avl_deinit(avl_tree_ptr tree,
+		free_func_ptr free_key,
 		free_func_ptr free_value);
 
 /* deletion */
-int avl_delete (avl_tree_ptr tree, 
-		generic_ptr key, 
+int avl_delete (avl_tree_ptr tree,
+		generic_ptr key,
 		generic_dptr value_p);
 
 /* delete pair */
-int avl_delete_pair (avl_tree_ptr tree, 
-		     generic_ptr key, 
+int avl_delete_pair (avl_tree_ptr tree,
+		     generic_ptr key,
 		     generic_ptr value);
 
 /* insertion */
-int avl_insert (avl_tree_ptr tree, 
-		generic_ptr key, 
+int avl_insert (avl_tree_ptr tree,
+		generic_ptr key,
 		generic_ptr value);
 
 /* find element */
-int avl_find (avl_tree_ptr tree, 
-	      generic_ptr key, 
+int avl_find (avl_tree_ptr tree,
+	      generic_ptr key,
 	      generic_dptr pvalue);
 
 /* smallest element (key) */
-int avl_first (avl_tree_ptr tree, 
-	       generic_dptr pkey, 
+int avl_first (avl_tree_ptr tree,
+	       generic_dptr pkey,
 	       generic_dptr pvalue);
 
 /* biggest element (key) */
-int avl_last (avl_tree_ptr tree, 
-	      generic_dptr pkey, 
+int avl_last (avl_tree_ptr tree,
+	      generic_dptr pkey,
 	      generic_dptr pvalue);
 
 /* find or insert */
-int avl_find_or_insert (avl_tree_ptr tree, 
-			generic_ptr key, 
+int avl_find_or_insert (avl_tree_ptr tree,
+			generic_ptr key,
 			generic_tptr slot);
 
 /* iterate over all nodes with a function */
-void avl_foreach (avl_tree_ptr tree, 
-		  iter_func_ptr func, 
+void avl_foreach (avl_tree_ptr tree,
+		  iter_func_ptr func,
 		  int dir);
 
 /* iterator constructor */
-avl_iterator_ptr avl_iter (avl_tree_ptr tree, 
+avl_iterator_ptr avl_iter (avl_tree_ptr tree,
 			   int dir);
 
 /* iterator destructor */
@@ -137,4 +134,3 @@ int  avl_check_tree(avl_tree_ptr tree);
 #endif
 
 #endif
-

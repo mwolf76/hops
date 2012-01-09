@@ -38,23 +38,31 @@ cdef extern from "array/array.h":
     int array_iter_next(array_iterator_ptr iter_,
                         generic_dptr value_p)
 
-    # number of entries
-    int array_count(array_ptr array)
 
-    # deletion
-    int array_delete (array_ptr array,
-                    generic_ptr key_p,
-                    generic_dptr value_p)
+    # number of entries
+    int array_n(array_ptr array)
+
+    # number of occurrences
+    int array_count(array_ptr array, generic_ptr key)
+
+    # getter
+    int array_fetch (array_ptr array,
+                     unsigned index,
+                     generic_dptr out)
 
     # insertion
     int array_insert (array_ptr array,
                       unsigned ndx,
            	      generic_ptr key)
 
+    # deletion
+    int array_delete(array_ptr array,
+                     unsigned index,
+                     generic_dptr item_p)
+
     # find element
     int array_find (array_ptr array,
-                    generic_ptr key,
-                    generic_dptr pvalue)
+                    generic_ptr key)
 
     # first element
     int array_first (array_ptr array,

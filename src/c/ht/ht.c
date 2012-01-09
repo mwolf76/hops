@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "hashtable.h"
+#include "ht.h"
 
 static const unsigned int ht_primes[] = {
   193, 389, 769, 1543, 3079, 6151, 12289, 24593, 49157, 98317,
@@ -38,7 +38,7 @@ static int ht_allocate_table(ht_ptr ht)
 }
 
 /* Free an entry, calling the free functions if there are any registered */
-static void ht_free_entry(HashTable *ht, HashTableEntry *entry)
+static void ht_free_entry(ht_ptr ht, ht_entry_ptr entry)
 {
   /* /\* If there is a function registered for freeing keys, use it to free */
   /*  * the key *\/ */
@@ -58,16 +58,14 @@ static void ht_free_entry(HashTable *ht, HashTableEntry *entry)
 ht_ptr ht_init(hash_func_ptr hash_func,
                cmp_func_ptr cmp_func)
 {
-  HashTable_ptr ht;
+  ht_ptr ht;
 
   /* Allocate a new hash table structure */
   if (!(ht = (ht_ptr) malloc(sizeof(ht))))
     return NULL;
 
   ht->hash_func = hash_func;
-  ht->equal_func = equal_func;
-  ht->key_free_func = NULL;
-  ht->value_free_func = NULL;
+  ht->cmp_func = cmp_func;
   ht->entries = 0;
   ht->prime_index = 0;
 
@@ -111,7 +109,7 @@ void ht_free(ht_ptr ht)
 /* } */
 
 
-static inline int ht_enlarge(HashTable *ht)
+static inline int ht_enlarge(ht_ptr ht)
 {
   ht_entry_dptr old_table;
   int old_table_size;
@@ -187,21 +185,21 @@ int ht_insert(ht_ptr ht, generic_ptr key, generic_ptr value)
   rover = ht->table[index];
 
   while (rover != NULL) {
-    if (ht->equal_func(rover->key, key) != 0) {
+    if (!(ht->cmp_func(rover->key, key))) {
 
       /* Same key: overwrite this entry with new data */
 
-      /* If there is a value free function, free the old data
-       * before adding in the new data */
-      if (ht->value_free_func != NULL) {
-        ht->value_free_func(rover->value);
-      }
+      /* /\* If there is a value free function, free the old data */
+      /*  * before adding in the new data *\/ */
+      /* if (ht->value_free_func != NULL) { */
+      /*   ht->value_free_func(rover->value); */
+      /* } */
 
-      /* Same with the key: use the new key value and free
-       * the old one */
-      if (ht->key_free_func != NULL) {
-        ht->key_free_func(rover->key);
-      }
+      /* /\* Same with the key: use the new key value and free */
+      /*  * the old one *\/ */
+      /* if (ht->key_free_func != NULL) { */
+      /*   ht->key_free_func(rover->key); */
+      /* } */
 
       rover->key = key;
       rover->value = value;
@@ -213,7 +211,7 @@ int ht_insert(ht_ptr ht, generic_ptr key, generic_ptr value)
   }
 
   /* Not in the hash table yet.  Create a new entry */
-  newentry = (HashTableEntry *) malloc(sizeof(HashTableEntry));
+  newentry = (ht_entry_ptr) malloc(sizeof(ht_entry));
 
   if (newentry == NULL) {
     return 0;
@@ -233,7 +231,7 @@ int ht_insert(ht_ptr ht, generic_ptr key, generic_ptr value)
   return 1;
 }
 
-generic_ptr ht_lookup(HashTable ht_ptr, generic_ptr key)
+generic_ptr ht_find(ht_ptr ht, generic_ptr key)
 {
   ht_entry_ptr rover;
   int index;
@@ -246,7 +244,7 @@ generic_ptr ht_lookup(HashTable ht_ptr, generic_ptr key)
   rover = ht->table[index];
 
   while (rover != NULL) {
-    if (ht->equal_func(key, rover->key) != 0) {
+    if (!(ht->cmp_func(key, rover->key))) {
 
       /* Found the entry.  Return the data. */
       return rover->value;
@@ -259,10 +257,10 @@ generic_ptr ht_lookup(HashTable ht_ptr, generic_ptr key)
   return NULL;
 }
 
-int ht_remove(HashTable *ht, HashTableKey key)
+int ht_remove(ht_ptr ht, generic_ptr key)
 {
-  HashTableEntry **rover;
-  HashTableEntry *entry;
+  ht_entry_dptr rover;
+  ht_entry_ptr entry;
   int index;
   int result;
 
@@ -279,7 +277,7 @@ int ht_remove(HashTable *ht, HashTableKey key)
 
   while (*rover != NULL) {
 
-    if (ht->equal_func(key, (*rover)->key) != 0) {
+    if (!(ht->cmp_func(key, (*rover)->key))) {
 
       /* This is the entry to remove */
       entry = *rover;
@@ -303,7 +301,7 @@ int ht_remove(HashTable *ht, HashTableKey key)
   return result;
 }
 
-size_t ht_num_entries(ht_ptr ht)
+int ht_count(ht_ptr ht)
 {
   assert(ht);
   return ht->entries;
@@ -337,7 +335,7 @@ int ht_iter_has_more(ht_iterator_ptr iterator)
 generic_ptr ht_iter_next(ht_iterator_ptr iterator)
 {
   ht_entry_ptr current_entry;
-  HashTable_ptr ht;
+  ht_ptr ht;
 
   generic_ptr result;
   int chain;

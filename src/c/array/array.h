@@ -43,12 +43,16 @@ int array_fetch(array_ptr array, unsigned index, generic_dptr out);
 
 /* setter */
 int array_insert(array_ptr array, unsigned index, generic_ptr obj);
+int array_delete(array_ptr array, unsigned index, generic_dptr obj);
 
+int array_find(array_ptr array, generic_ptr buf);
 
 /* iterators */
 array_iterator_ptr array_iter(array_ptr array, int dir);
 
-unsigned array_count(const array_ptr array);
+unsigned array_n(const array_ptr array);
+
+unsigned array_count(const array_ptr array, generic_ptr obj);
 
 void array_iter_deinit(array_iterator_ptr iter);
 
