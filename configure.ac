@@ -35,9 +35,9 @@ else
 fi
 
 AC_MSG_CHECKING([for Cython >= 0.11.3])
-CYTHON_CHECK_VERSION(0.11.3,  [AC_MSG_RESULT(yes) 
-			      have_cython=yes], 
-			      [AC_MSG_RESULT(no) 
+CYTHON_CHECK_VERSION(0.11.3,  [AC_MSG_RESULT(yes)
+			      have_cython=yes],
+			      [AC_MSG_RESULT(no)
 			      have_cython=no])
 
 oldcflags=$CFLAGS
@@ -82,16 +82,16 @@ AC_CHECK_HEADERS([float.h limits.h memory.h stddef.h stdlib.h string.h \
 
 # This is for malloc:
 AC_CHECK_HEADER(sys/types.h)
-AC_CHECK_HEADER(malloc.h, 
+AC_CHECK_HEADER(malloc.h,
 	[ AC_DEFINE(HAVE_MALLOC_H, 1, Defined to 1 if the system provides malloc.h)],
-	[ AC_CHECK_HEADER(sys/malloc.h, 
+	[ AC_CHECK_HEADER(sys/malloc.h,
 	    [AC_DEFINE(HAVE_SYS_MALLOC_H, 1, Defined to 1 if the system provides sys/malloc.h)],
 	    [],
 	    [
 	      #if HAVE_SYS_TYPES_H
 	      # include <sys/types.h>
 	      #endif
-	    ]  
+	    ]
 	    )],
 	[
 	 #if HAVE_SYS_TYPES_H
@@ -124,6 +124,7 @@ AC_CONFIG_FILES([Makefile
 		 src/Makefile
                  src/c/Makefile
 		 src/c/avl/Makefile
+                 src/c/ht/Makefile
 		 src/c/array/Makefile
 		 src/cython/Makefile
 		 hops.pc])
@@ -133,7 +134,7 @@ AC_OUTPUT
 echo
 
 dnl if  [ test "x$ac_have_minisat" = "xno" ] && [ test "x$ac_have_zchaff" = "xno" ]; then
-dnl echo ------------------------------------------------------------------ 
+dnl echo ------------------------------------------------------------------
 dnl echo "WARNING: No SAT solver will be linked to NuSMV."
 dnl echo "WARNING: All NuSMV commands and options that depend on a SAT "
 dnl echo "WARNING: solver will not be available."
@@ -141,6 +142,5 @@ dnl echo "WARNING: If you want to use SAT solver NuSMV features, please "
 dnl echo "WARNING: compile and link the zchaff SAT solver or the MiniSat"
 dnl echo "WARNING: SAT solver. "
 dnl echo "WARNING: For further help, try \"./configure --help\"."
-dnl echo ------------------------------------------------------------------ 
+dnl echo ------------------------------------------------------------------
 dnl fi
-

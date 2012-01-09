@@ -9,4 +9,4 @@ PKG_SOURCES = $(PKG_H) $(PKG_C)
 # -------------------------------------------------------
 
 noinst_LTLIBRARIES = libht.la
-libavl_la_SOURCES = $(PKG_SOURCES)
+libht_la_SOURCES = $(PKG_SOURCES)
