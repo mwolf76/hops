@@ -14,13 +14,13 @@
 #define STACK_SIZE 0x2000
 
 /* static function prototypes */
-static inline avl_node_ptr 
+static inline avl_node_ptr
 new_node(generic_ptr key, generic_ptr value);
 
 static inline avl_node_ptr
 find_rightmost(avl_node_dptr node_p);
 
-static inline void 
+static inline void
 do_rebalance(avl_node_tptr stack_nodep, int stack_n);
 
 static inline void
@@ -32,16 +32,16 @@ rotate_left(avl_node_dptr node_p);
 static inline void
 rotate_right(avl_node_dptr node_p);
 
-static inline void 
+static inline void
 avl_record_iter_forward(avl_node_ptr node, avl_iterator_ptr iter);
 
-static inline void 
+static inline void
 avl_record_iter_backward(avl_node_ptr node, avl_iterator_ptr iter);
 
-static inline void 
+static inline void
 avl_walk_forward(avl_node_ptr node, iter_func_ptr func);
 
-static inline void 
+static inline void
 avl_walk_backward(avl_node_ptr node, iter_func_ptr func);
 
 #ifndef NDEBUG
@@ -59,17 +59,17 @@ free_entry(avl_node_ptr node, free_func_ptr key_free, free_func_ptr value_free);
    int compare(generic_ptr a, generic_ptr b)
 
    and return a number < 0, == 0, > 0 depending on whether a < b, a ==
-   b, or a > b, respectively. 
+   b, or a > b, respectively.
 */
 avl_tree_ptr avl_init(cmp_func_ptr cmp)
 {
-  avl_tree_ptr tree = (avl_tree_ptr)(malloc(sizeof(avl_tree)));
+  avl_tree_ptr this = (avl_tree_ptr)(malloc(sizeof(avl_tree)));
 
-  tree->root = NULL;
-  tree->cmp = cmp;
-  tree->num_entries = 0;
+  this->root = NULL;
+  this->cmp = cmp;
+  this->num_entries = 0;
 
-  return tree;
+  return this;
 }
 
 /**
@@ -82,40 +82,40 @@ avl_tree_ptr avl_init(cmp_func_ptr cmp)
 
    The C-library function free is often suitable as a free function.
 */
-void avl_deinit(avl_tree_ptr tree, 
+void avl_deinit(avl_tree_ptr this,
 		free_func_ptr key_free,
 		free_func_ptr value_free)
 {
-  free_entry(tree->root, key_free, value_free);
-  free(tree);
+  free_entry(this->root, key_free, value_free);
+  free(this);
 }
 
-/** 
-    Returns number of entries in the tree 
+/**
+    Returns number of entries in the tree
  */
-int avl_count(avl_tree_ptr tree)
+int avl_count(avl_tree_ptr this)
 {
-  return tree->num_entries;
+  return this->num_entries;
 }
 
 
-/** 
+/**
    Search for an entry matching `key'.  If found, set `value_p' to the
    associated value field and return 1.  If not found, return 0 and
-   leave `value_p' unchanged.  
+   leave `value_p' unchanged.
 */
-int avl_find(avl_tree_ptr tree,
+int avl_find(avl_tree_ptr this,
 	     generic_ptr key,
 	     generic_dptr value_p)
 {
    avl_node_ptr node;
    int diff;
 
-  node = tree->root;
+  node = this->root;
   while (node) {
 
     /* got a match ? */
-    if (! (diff = tree->cmp(key, node->key))) {
+    if (! (diff = this->cmp(key, node->key))) {
       /* if a non-NULL pointer was given, fetch value */
       if (value_p) (*value_p) = node->value;
 
@@ -131,19 +131,19 @@ int avl_find(avl_tree_ptr tree,
 
 /**
    Retrieves the smallest element in the tree.  Returns 0 if there are
-   no elements in the tree.  
+   no elements in the tree.
 */
-int avl_first(avl_tree_ptr tree, 
-	      generic_dptr key_p, 
+int avl_first(avl_tree_ptr this,
+	      generic_dptr key_p,
 	      generic_dptr value_p)
 {
-  if (!tree->root) return 0;
+  if (!this->root) return 0;
 
   else {
     avl_node_ptr node;
 
     /* walk down the tree; stop at leftmost leaf */
-    for(node = tree->root; node->left != 0; node = node->left) ;
+    for(node = this->root; node->left != 0; node = node->left) ;
 
     if (key_p) (*key_p) = node->key;
     if (value_p) (*value_p) = node->value;
@@ -154,18 +154,18 @@ int avl_first(avl_tree_ptr tree,
 
 /**
    Retrieves the largest element in the tree.  Returns 0 if there are
-   no elements in the tree.  
+   no elements in the tree.
 */
-int avl_last(avl_tree_ptr tree, generic_dptr key_p, generic_dptr value_p)
+int avl_last(avl_tree_ptr this, generic_dptr key_p, generic_dptr value_p)
 {
-  if (tree->root == 0) return 0;
+  if (this->root == 0) return 0;
 
   else {
     avl_node_ptr node;
 
 
     /* walk down the tree; stop at rightmost leaf */
-    for(node = tree->root; node->right != 0; node = node->right) ;
+    for(node = this->root; node->right != 0; node = node->right) ;
 
     if (key_p) (*key_p) = node->key;
     if (value_p) (*value_p) = node->value;
@@ -179,7 +179,7 @@ int avl_last(avl_tree_ptr tree, generic_dptr key_p, generic_dptr value_p)
    Insert the value `value' under the key `key'.  Multiple items are
    allowed with the same value; all are inserted.
  */
-int avl_insert(avl_tree_ptr tree, generic_ptr key, generic_ptr value)
+int avl_insert(avl_tree_ptr this, generic_ptr key, generic_ptr value)
 {
   avl_node_dptr node_p;
   avl_node_ptr node;
@@ -189,13 +189,13 @@ int avl_insert(avl_tree_ptr tree, generic_ptr key, generic_ptr value)
 
   int diff, status;
 
-  node_p = &tree->root;
+  node_p = &this->root;
 
   /* walk down the tree (saving the path); stop at insertion point */
   status = 0;
   while ((node = (*node_p))) {
     stack_nodep[stack_n++] = node_p;
-    if (! (diff = tree->cmp(key, node->key))) status = 1;
+    if (! (diff = this->cmp(key, node->key))) status = 1;
 
     node_p = (diff < 0) ? &node->left : &node->right;
   }
@@ -204,8 +204,8 @@ int avl_insert(avl_tree_ptr tree, generic_ptr key, generic_ptr value)
   (*node_p) = new_node(key, value);
   do_rebalance(stack_nodep, stack_n);
 
-  tree->num_entries++;
-  tree->modified = 1;
+  this->num_entries++;
+  this->modified = 1;
 
   return status;
 }
@@ -217,25 +217,25 @@ int avl_insert(avl_tree_ptr tree, generic_ptr key, generic_ptr value)
    the existing entry.  slot_p can be used to associate a value with
    the key.
 */
-int avl_find_or_insert(avl_tree_ptr tree, generic_ptr key, generic_tptr slot_p)
+int avl_find_or_insert(avl_tree_ptr this, generic_ptr key, generic_tptr slot_p)
 {
   avl_node_dptr node_p;
   avl_node_ptr node;
   int stack_n = 0;
-  
+
   avl_node_dptr stack_nodep[STACK_SIZE];
   int diff;
 
-  node_p = &tree->root;
+  node_p = &this->root;
 
   /* walk down the tree (saving the path); stop at insertion point */
   while ((node = (*node_p))) {
     stack_nodep[stack_n++] = node_p;
 
     /* found ? */
-    if (! (diff = tree->cmp(key, node->key))) {
+    if (! (diff = this->cmp(key, node->key))) {
       if (slot_p) (*slot_p) = &node->value;
-      return 1;           
+      return 1;
     }
 
     node_p = (diff < 0) ? &node->left : &node->right;
@@ -246,8 +246,8 @@ int avl_find_or_insert(avl_tree_ptr tree, generic_ptr key, generic_tptr slot_p)
 
   do_rebalance(stack_nodep, stack_n);
 
-  tree->num_entries++;
-  tree->modified = 1;
+  this->num_entries++;
+  this->modified = 1;
 
   if (slot_p != 0) (*slot_p) = &node->value;
 
@@ -261,22 +261,22 @@ int avl_find_or_insert(avl_tree_ptr tree, generic_ptr key, generic_tptr slot_p)
    Search for the item with key `*key_p' in `tree'.  If found, set
    `key_p' and `value_p' to point to the key and value of item, delete
    the item and return 1.  Otherwise return 0 and leave `key_p' and
-   `value_p' unchanged.  
+   `value_p' unchanged.
 */
-int avl_delete(avl_tree_ptr tree, generic_ptr key, generic_dptr value_p)
+int avl_delete(avl_tree_ptr this, generic_ptr key, generic_dptr value_p)
 {
   avl_node_dptr node_p;
   avl_node_ptr node;
   avl_node_ptr rightmost;
   avl_node_dptr stack_nodep[STACK_SIZE];
- 
+
   int diff, stack_n = 0;
 
-  node_p = &tree->root;
+  node_p = &this->root;
 
   /* Walk down the tree saving the path; return if not found */
   while ((node = (*node_p))) {
-    if (! (diff = tree->cmp(key, node->key))) goto delete_item;
+    if (! (diff = this->cmp(key, node->key))) goto delete_item;
 
     stack_nodep[stack_n++] = node_p;
     node_p = (diff < 0) ? &node->left : &node->right;
@@ -293,7 +293,7 @@ int avl_delete(avl_tree_ptr tree, generic_ptr key, generic_dptr value_p)
     rightmost->left = node->left;
     rightmost->right = node->right;
     rightmost->height = -2;     /* mark bogus height for do_rebal */
-    
+
     (*node_p) = rightmost;
     stack_nodep[stack_n++] = node_p;
   }
@@ -302,8 +302,8 @@ int avl_delete(avl_tree_ptr tree, generic_ptr key, generic_dptr value_p)
 
   /* work our way back up, re-balancing the tree */
   do_rebalance(stack_nodep, stack_n);
-  tree->num_entries--;
-  tree->modified = 1;
+  this->num_entries--;
+  this->modified = 1;
 
   return 1;
 }
@@ -314,22 +314,22 @@ int avl_delete(avl_tree_ptr tree, generic_ptr key, generic_dptr value_p)
    Search for the item with key `*key_p' in `tree'.  If found, set
    `key_p' and `value_p' to point to the key and value of item, delete
    the item and return 1.  Otherwise return 0 and leave `key_p' and
-   `value_p' unchanged.  
+   `value_p' unchanged.
 */
-int avl_delete_pair(avl_tree_ptr tree, generic_ptr key, generic_ptr value_p)
+int avl_delete_pair(avl_tree_ptr this, generic_ptr key, generic_ptr value_p)
 {
   avl_node_dptr node_p;
   avl_node_ptr node;
   avl_node_ptr rightmost;
   avl_node_dptr stack_nodep[STACK_SIZE];
- 
+
   int diff, stack_n = 0;
 
-  node_p = &tree->root;
+  node_p = &this->root;
 
   /* Walk down the tree saving the path; return if not found */
   while ((node = (*node_p))) {
-    if (! (diff = tree->cmp(key, node->key))) goto delete_item;
+    if (! (diff = this->cmp(key, node->key))) goto delete_item;
 
     stack_nodep[stack_n++] = node_p;
     node_p = (diff < 0) ? &node->left : &node->right;
@@ -344,7 +344,7 @@ int avl_delete_pair(avl_tree_ptr tree, generic_ptr key, generic_ptr value_p)
     rightmost->left = node->left;
     rightmost->right = node->right;
     rightmost->height = -2;     /* mark bogus height for do_rebal */
-    
+
     (*node_p) = rightmost;
     stack_nodep[stack_n++] = node_p;
   }
@@ -353,44 +353,45 @@ int avl_delete_pair(avl_tree_ptr tree, generic_ptr key, generic_ptr value_p)
 
   /* work our way back up, re-balancing the tree */
   do_rebalance(stack_nodep, stack_n);
-  tree->num_entries--;
-  tree->modified = 1;
+  this->num_entries--;
+  this->modified = 1;
 
   return 1;
 }
 
 
 /**
-   Generate the next item from the avl-tree.  
+   Generate the next item from the avl-tree.
 
    Returns 0 if there are no more items in the tree.  Deletion of last
    generated item (via avl_delete) is supported.  Insertion of items
    during generation will result in these items never being generated
-   (until the next avl_init_gen()). 
+   (until the next avl_init_gen()).
 */
 avl_iterator_ptr avl_iter(avl_tree_ptr tree, int dir)
 {
-  avl_iterator_ptr iter;
+  avl_iterator_ptr this;
 
   /* what a hack */
-  iter = (avl_iterator_ptr)(malloc(sizeof(avl_iterator)));
-  iter->tree = tree;
-  iter->nodelist = (avl_node_dptr)(malloc(sizeof(avl_node) * tree->num_entries));
-  iter->count = 0;
+  this = (avl_iterator_ptr)(malloc(sizeof(avl_iterator)));
+  this->tree = tree;
+  this->nodelist = (avl_node_dptr)(malloc(sizeof(avl_node) * tree->num_entries));
+  this->count = 0;
 
   if (dir == AVL_ITER_FORWARD) {
-    avl_record_iter_forward(tree->root, iter);
-  } 
+    avl_record_iter_forward(tree->root, this);
+  }
   else if (dir ==  AVL_ITER_BACKWARD) {
-    avl_record_iter_backward(tree->root, iter);
+    avl_record_iter_backward(tree->root, this);
   }
   else assert(0);
 
-  iter->count = 0;
+  this->count = 0; /* FIXME: twice? */
 
   /* catch any attempt to modify the tree while we generate */
   tree->modified = 0;
-  return iter;
+
+  return this;
 }
 
 
@@ -432,22 +433,22 @@ void avl_iter_free(avl_iterator_ptr iter)
    where `key' is the key the item was stored under, and `value' the
    value of the item.
 */
-void avl_foreach(avl_tree_ptr tree, iter_func_ptr func, int direction)
+void avl_foreach(avl_tree_ptr this, iter_func_ptr func, int direction)
 {
   if (direction == AVL_ITER_FORWARD) {
-    avl_walk_forward(tree->root, func);
-  } 
+    avl_walk_forward(this->root, func);
+  }
 
   else if (direction == AVL_ITER_BACKWARD) {
-    avl_walk_backward(tree->root, func);
+    avl_walk_backward(this->root, func);
   }
-  
+
   else assert(0);
 }
 
 
 /* -------------------------- internal functions -------------------------- */
-static inline avl_node_ptr 
+static inline avl_node_ptr
 find_rightmost(avl_node_dptr node_p)
 {
   avl_node_ptr node;
@@ -467,7 +468,7 @@ find_rightmost(avl_node_dptr node_p)
 }
 
 
-static inline void 
+static inline void
 do_rebalance(avl_node_tptr stack_nodep, int stack_n)
 {
   avl_node_dptr node_p;
@@ -485,11 +486,11 @@ do_rebalance(avl_node_tptr stack_nodep, int stack_n)
     hr = HEIGHT(node->right);           /* watch for NIL */
     if ((hr - hl) < -1) {
       rotate_right(node_p);
-    } 
+    }
 
     else if ((hr - hl) > 1) {
       rotate_left(node_p);
-    } 
+    }
 
     else {
       height = MAX(hl, hr) + 1;
@@ -511,7 +512,7 @@ rotate_left(avl_node_dptr node_p)
     (*node_p) = new_root = old_root->right;
     old_root->right = new_root->left;
     new_root->left = old_root;
-  } 
+  }
 
   else {
     new_right = old_root->right;
@@ -539,7 +540,7 @@ rotate_right( avl_node_dptr node_p)
     (*node_p) = new_root = old_root->left;
     old_root->left = new_root->right;
     new_root->right = old_root;
-  } 
+  }
 
   else {
     new_left = old_root->left;
@@ -556,7 +557,7 @@ rotate_right( avl_node_dptr node_p)
 }
 
 
-static inline void 
+static inline void
 avl_walk_forward(avl_node_ptr node, iter_func_ptr func)
 {
   if (node) {
@@ -567,7 +568,7 @@ avl_walk_forward(avl_node_ptr node, iter_func_ptr func)
 }
 
 
-static inline void 
+static inline void
 avl_walk_backward(avl_node_ptr node, iter_func_ptr func)
 {
   if (node) {
@@ -577,7 +578,7 @@ avl_walk_backward(avl_node_ptr node, iter_func_ptr func)
   }
 }
 
-static inline void 
+static inline void
 avl_record_iter_forward(avl_node_ptr node, avl_iterator_ptr iter)
 {
   if (node) {
@@ -588,7 +589,7 @@ avl_record_iter_forward(avl_node_ptr node, avl_iterator_ptr iter)
 }
 
 
-static inline void 
+static inline void
 avl_record_iter_backward(avl_node_ptr node, avl_iterator_ptr iter)
 {
   if (node) {
@@ -604,8 +605,8 @@ compute_height(avl_node_ptr node) {
 			 HEIGHT(node->right));
 }
 
-static inline void 
-free_entry(avl_node_ptr node, 
+static inline void
+free_entry(avl_node_ptr node,
            free_func_ptr key_free, free_func_ptr value_free)
 {
   if (node) {
@@ -617,9 +618,9 @@ free_entry(avl_node_ptr node,
     free(node);
   }
 }
-    
+
 /* Allocate a new AVL node */
-static inline avl_node_ptr 
+static inline avl_node_ptr
 new_node(generic_ptr key, generic_ptr value)
 {
   avl_node_ptr new = (avl_node_ptr)(malloc(sizeof(avl_node)));
@@ -636,21 +637,21 @@ new_node(generic_ptr key, generic_ptr value)
 #ifndef NDEBUG
 /* Check if the tree is well-formed (this is for debugging purposes
    only) */
-int 
-avl_check_tree(avl_tree_ptr tree)
+int
+avl_check_tree(avl_tree_ptr this)
 {
   int error = 0;
-  (void) do_check_tree(tree->root, tree->cmp, &error);
+  (void) do_check_tree(this->root, this->cmp, &error);
 
   return error;
 }
 
 /* Internal service of avl_check_tree */
-static inline int 
+static inline int
 do_check_tree(avl_node_ptr node, cmp_func_ptr compare, int* error)
 {
   int l_height, r_height, comp_height, bal;
-    
+
   if (!node) return -1;
 
   r_height = do_check_tree(node->right, compare, error);
@@ -658,7 +659,7 @@ do_check_tree(avl_node_ptr node, cmp_func_ptr compare, int* error)
 
   comp_height = MAX(l_height, r_height) + 1;
   bal = r_height - l_height;
-    
+
   if (comp_height != node->height) {
     printf("Bad height for 0x%p: computed=%d stored=%d\n",
 	   (void*) node, comp_height, node->height);
@@ -666,21 +667,21 @@ do_check_tree(avl_node_ptr node, cmp_func_ptr compare, int* error)
   }
 
   if (bal > 1 || bal < -1) {
-    (void) printf("Out of balance at node 0x%p, balance = %d\n", 
+    (void) printf("Out of balance at node 0x%p, balance = %d\n",
                   (void*) node, bal);
     ++(*error);
   }
 
-  if ((node->left) && 
+  if ((node->left) &&
       compare(node->left->key, node->key) > 0) {
-    (void) printf("Bad ordering between 0x%p and 0x%p", 
+    (void) printf("Bad ordering between 0x%p and 0x%p",
                   (void*) node, (void*) node->left);
     ++(*error);
   }
-    
-  if ((node->right) && 
+
+  if ((node->right) &&
       compare(node->key, node->right->key) > 0) {
-    (void) printf("Bad ordering between 0x%p and 0x%p", 
+    (void) printf("Bad ordering between 0x%p and 0x%p",
                   (void*) node, (void*) node->right);
     ++(*error);
   }
