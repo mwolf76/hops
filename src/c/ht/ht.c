@@ -16,98 +16,103 @@ static const int ht_num_primes = \
 
 
 /* -- internal functions ---------------------------------------------------- */
-static int ht_allocate_table(ht_ptr ht);
-static void ht_free_entry(ht_ptr ht, ht_entry_ptr entry);
-static int ht_grow(ht_ptr ht);
+static int ht_allocate_table(ht_ptr this);
+static void ht_free_entry(ht_ptr this, ht_entry_ptr entry);
+static int ht_grow(ht_ptr this);
 
 ht_ptr ht_init(hash_func_ptr hash_func,
                cmp_func_ptr cmp_func,
                free_func_ptr key_free_func,
                free_func_ptr value_free_func)
 {
-  ht_ptr ht;
+  ht_ptr this;
 
   /* Allocate a new hash table structure */
-  if (!(ht = (ht_ptr) malloc(sizeof(ht))))
+  if (!(this = (ht_ptr) malloc(sizeof(ht))))
     return NULL;
 
-  ht->hash_func = hash_func;
-  ht->cmp_func = cmp_func;
-
-  ht->entries = 0;
-  ht->prime_index = 0;
+  this->hash_func = hash_func;
+  this->cmp_func = cmp_func;
+  this->key_free_func = key_free_func;
+  this->value_free_func = value_free_func;
+  this->entries = 0;
+  this->prime_index = 0;
 
   /* Allocate the table */
-  if (!ht_allocate_table(ht)) {
-    free(ht);
+  if (!ht_allocate_table(this)) {
+    free(this);
     return NULL;
   }
 
-  return ht;
+  return this;
 }
 
-void ht_deinit(ht_ptr ht)
+void ht_deinit(ht_ptr this)
 {
+  CHECK_INSTANCE(this);
+
   ht_entry_ptr rover, next;
   int i;
 
   /* Free all entries in all chains */
-  for (i=0; i<ht->table_size; ++i) {
-    rover = ht->table[i];
+  for (i=0; i<this->table_size; ++i) {
+    rover = this->table[i];
 
     while (rover != NULL) {
       next = rover->next;
-      ht_free_entry(ht, rover);
+      ht_free_entry(this, rover);
       rover = next;
     }
   }
 
   /* Free the table */
-  free(ht->table);
+  free(this->table);
 
   /* Free the hash table structure */
-  free(ht);
+  free(this);
 }
 
-int ht_insert(ht_ptr ht, generic_ptr key, generic_ptr value)
+int ht_insert(ht_ptr this, generic_ptr key, generic_ptr value)
 {
+  CHECK_INSTANCE(this);
+
   ht_entry_ptr rover, newentry;
   unsigned index;
 
   /* If there are too many items in the table with respect to the table
    * size, the number of hash collisions increases and performance
    * decreases. Grow the table size to prevent this happening */
-  if ((ht->entries * 3) / ht->table_size > 0) {
+  if ((this->entries * 3) / this->table_size > 0) {
 
     /* Table is more than 1/3 full */
-    if (!ht_grow(ht)) {
+    if (!ht_grow(this)) {
       /* Failed to grow the table */
       return 0;
     }
   }
 
   /* Generate the hash of the key and hence the index into the table */
-  index = ht->hash_func(key) % ht->table_size;
+  index = this->hash_func(key) % this->table_size;
 
   /* Traverse the chain at this location and look for an existing
    * entry with the same key */
-  rover = ht->table[index];
+  rover = this->table[index];
 
   while (rover != NULL) {
-    if (!(ht->cmp_func(rover->key, key))) {
+    if (!(this->cmp_func(rover->key, key))) {
 
       /* Same key: overwrite this entry with new data */
 
       /* If there is a value free function, free the old data
        * before adding in the new data */
-      if (ht->value_free_func != NULL) {
-        ht->value_free_func(rover->value);
+      if (this->value_free_func != NULL) {
+        this->value_free_func(rover->value);
       }
 
       /* Same with the key: use the new key value and free
        * the old one */
-      if (ht->key_free_func != NULL) {
-        ht->key_free_func(rover->key);
+      if (this->key_free_func != NULL) {
+        this->key_free_func(rover->key);
       }
 
       rover->key = key;
@@ -130,30 +135,32 @@ int ht_insert(ht_ptr ht, generic_ptr key, generic_ptr value)
   newentry->value = value;
 
   /* Link into the list */
-  newentry->next = ht->table[index];
-  ht->table[index] = newentry;
+  newentry->next = this->table[index];
+  this->table[index] = newentry;
 
   /* Maintain the count of the number of entries */
-  ++ht->entries;
+  ++this->entries;
 
   /* Added successfully */
   return 1;
 }
 
-generic_ptr ht_find(ht_ptr ht, generic_ptr key)
+generic_ptr ht_find(ht_ptr this, generic_ptr key)
 {
+  CHECK_INSTANCE(this);
+
   ht_entry_ptr rover;
   int index;
 
   /* Generate the hash of the key and hence the index into the table */
-  index = ht->hash_func(key) % ht->table_size;
+  index = this->hash_func(key) % this->table_size;
 
   /* Walk the chain at this index until the corresponding entry is
    * found */
-  rover = ht->table[index];
+  rover = this->table[index];
 
   while (rover != NULL) {
-    if (!(ht->cmp_func(key, rover->key))) {
+    if (!(this->cmp_func(key, rover->key))) {
 
       /* Found the entry.  Return the data. */
       return rover->value;
@@ -166,15 +173,17 @@ generic_ptr ht_find(ht_ptr ht, generic_ptr key)
   return NULL;
 }
 
-int ht_delete(ht_ptr ht, generic_ptr key)
+int ht_delete(ht_ptr this, generic_ptr key)
 {
+  CHECK_INSTANCE(this);
+
   ht_entry_dptr rover;
   ht_entry_ptr entry;
   int index;
   int result;
 
   /* Generate the hash of the key and hence the index into the table */
-  index = ht->hash_func(key) % ht->table_size;
+  index = this->hash_func(key) % this->table_size;
 
   /* Rover points at the pointer which points at the current entry
    * in the chain being inspected.  ie. the entry in the table, or
@@ -182,11 +191,11 @@ int ht_delete(ht_ptr ht, generic_ptr key)
    * allows us to unlink the entry when we find it. */
 
   result = 0;
-  rover = &ht->table[index];
+  rover = &this->table[index];
 
   while (*rover != NULL) {
 
-    if (!(ht->cmp_func(key, (*rover)->key))) {
+    if (!(this->cmp_func(key, (*rover)->key))) {
 
       /* This is the entry to delete */
       entry = *rover;
@@ -195,10 +204,10 @@ int ht_delete(ht_ptr ht, generic_ptr key)
       *rover = entry->next;
 
       /* Destroy the entry structure */
-      ht_free_entry(ht, entry);
+      ht_free_entry(this, entry);
 
       /* Track count of entries */
-      --ht->entries;
+      --this->entries;
       result = 1;
       break;
     }
@@ -210,27 +219,30 @@ int ht_delete(ht_ptr ht, generic_ptr key)
   return result;
 }
 
-size_t ht_count(ht_ptr ht)
+size_t ht_count(ht_ptr this)
 {
-  assert(ht);
-  return ht->entries;
+  CHECK_INSTANCE(this);
+
+  return this->entries;
 }
 
-ht_iterator_ptr ht_iter(ht_ptr ht)
+ht_iterator_ptr ht_iter(ht_ptr this)
 {
+  CHECK_INSTANCE(this);
+
   ht_iterator_ptr res = (ht_iterator_ptr)(malloc(sizeof(ht_iterator)));
   int chain;
 
-  res->ht = ht;
+  res->hash = this;
 
   /* Default value of next if no entries are found. */
   res->next_entry = NULL;
 
   /* Find the first entry */
-  for (chain=0; chain<ht->table_size; ++chain) {
+  for (chain=0; chain<this->table_size; ++chain) {
 
-    if (ht->table[chain] != NULL) {
-      res->next_entry = ht->table[chain];
+    if (this->table[chain] != NULL) {
+      res->next_entry = this->table[chain];
       res->next_chain = chain;
       break;
     }
@@ -239,33 +251,39 @@ ht_iterator_ptr ht_iter(ht_ptr ht)
   return res;
 }
 
-void ht_iter_deinit(ht_iterator_ptr iterator)
-{ free(iterator); }
-
-int ht_iter_has_more(ht_iterator_ptr iterator)
+void ht_iter_deinit(ht_iterator_ptr this)
 {
-  return iterator->next_entry != NULL;
+  CHECK_INSTANCE(this);
+
+  free(this);
+}
+
+int ht_iter_has_more(ht_iterator_ptr this)
+{
+  CHECK_INSTANCE(this);
+
+  return this->next_entry != NULL;
 }
 
 /* returns key as generic_ptr. If value_p is non-NULL stores value in
    (*value_p) before returning. */
-generic_ptr ht_iter_next(ht_iterator_ptr iterator, generic_dptr value_p)
+generic_ptr ht_iter_next(ht_iterator_ptr this, generic_dptr value_p)
 {
+  CHECK_INSTANCE(this);
+
   ht_entry_ptr current_entry;
-  ht_ptr ht;
+  ht_ptr hash = this->hash;
 
   generic_ptr result;
   int chain;
 
-  ht = iterator->ht;
-
   /* No more entries? */
-  if (iterator->next_entry == NULL) {
+  if (this->next_entry == NULL) {
     return NULL;
   }
 
   /* Result is immediately available */
-  current_entry = iterator->next_entry;
+  current_entry = this->next_entry;
   result = current_entry->key;
   if (value_p) (*value_p) = current_entry->value;
 
@@ -273,21 +291,21 @@ generic_ptr ht_iter_next(ht_iterator_ptr iterator, generic_dptr value_p)
   if (current_entry->next != NULL) {
 
     /* Next entry in current chain */
-    iterator->next_entry = current_entry->next;
+    this->next_entry = current_entry->next;
 
   } else {
 
     /* None left in this chain, so advance to the next chain */
-    chain = iterator->next_chain + 1;
+    chain = this->next_chain + 1;
 
     /* Default value if no next chain found */
-    iterator->next_entry = NULL;
+    this->next_entry = NULL;
 
-    while (chain < ht->table_size) {
+    while (chain < hash->table_size) {
 
       /* Is there anything in this chain? */
-      if (ht->table[chain] != NULL) {
-        iterator->next_entry = ht->table[chain];
+      if (hash->table[chain] != NULL) {
+        this->next_entry = hash->table[chain];
         break;
       }
 
@@ -295,55 +313,49 @@ generic_ptr ht_iter_next(ht_iterator_ptr iterator, generic_dptr value_p)
       ++chain;
     }
 
-    iterator->next_chain = chain;
+    this->next_chain = chain;
   }
 
   return result;
 }
 
 /* Internal function used to allocate the table on hash table creation
- * and when enlarging the table */
-static int ht_allocate_table(ht_ptr ht)
+ * and when growing the table */
+static int ht_allocate_table(ht_ptr this)
 {
-  size_t new_table_size;
+  size_t sz;
 
-  /* Determine the table size based on the current prime index.
-   * An attempt is made here to ensure sensible behavior if the
-   * maximum prime is exceeded, but in practice other things are
-   * likely to break long before that happens. */
-  if (ht->prime_index < ht_num_primes) {
-    new_table_size = ht_primes[ht->prime_index];
-  } else {
-    new_table_size = ht->entries * 10;
-  }
-
-  ht->table_size = new_table_size;
+  /* TODO: what if following assertion does not hold? */
+  assert (this->prime_index < ht_num_primes);
+  this->table_size = ht_primes[this->prime_index];
 
   /* Allocate the table and initialise to NULL for all entries */
-  ht->table = malloc(ht->table_size * sizeof(ht_entry_ptr));
+  sz = this->table_size * sizeof(ht_entry_ptr);
+  if (this->table = malloc(sz))
+    memset(this->table, 0, sz);
 
-  return ht->table != NULL;
+  return this->table != NULL;
 }
 
 /* Free an entry, calling the free functions if there are any registered */
-static void ht_free_entry(ht_ptr ht, ht_entry_ptr entry)
+static void ht_free_entry(ht_ptr this, ht_entry_ptr entry)
 {
   /* If there is a function registered for freeing keys, use it to free
    * the key */
-  if (ht->key_free_func != NULL) {
-    ht->key_free_func(entry->key);
+  if (this->key_free_func != NULL) {
+    this->key_free_func(entry->key);
   }
 
   /* Likewise with the value */
-  if (ht->value_free_func != NULL) {
-    ht->value_free_func(entry->value);
+  if (this->value_free_func != NULL) {
+    this->value_free_func(entry->value);
   }
 
   /* Free the data structure */
   free(entry);
 }
 
-static int ht_grow(ht_ptr ht)
+static int ht_grow(ht_ptr this)
 {
   ht_entry_dptr old_table;
   int old_table_size;
@@ -352,19 +364,19 @@ static int ht_grow(ht_ptr ht)
   int index, i;
 
   /* Store a copy of the old table */
-  old_table = ht->table;
-  old_table_size = ht->table_size;
-  old_prime_index = ht->prime_index;
+  old_table = this->table;
+  old_table_size = this->table_size;
+  old_prime_index = this->prime_index;
 
   /* Allocate a new, larger table */
-  ++ht->prime_index;
+  ++this->prime_index;
 
-  if (!ht_allocate_table(ht)) {
+  if (!ht_allocate_table(this)) {
 
     /* Failed to allocate the new table */
-    ht->table = old_table;
-    ht->table_size = old_table_size;
-    ht->prime_index = old_prime_index;
+    this->table = old_table;
+    this->table_size = old_table_size;
+    this->prime_index = old_prime_index;
 
     return 0;
   }
@@ -377,11 +389,11 @@ static int ht_grow(ht_ptr ht)
       next = rover->next;
 
       /* Find the index into the new table */
-      index = ht->hash_func(rover->key) % ht->table_size;
+      index = this->hash_func(rover->key) % this->table_size;
 
       /* Link this entry into the chain */
-      rover->next = ht->table[index];
-      ht->table[index] = rover;
+      rover->next = this->table[index];
+      this->table[index] = rover;
 
       /* Advance to next in the chain */
       rover = next;

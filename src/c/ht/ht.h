@@ -30,7 +30,7 @@ typedef ht* ht_ptr;
 typedef ht** ht_dptr;
 
 typedef struct ht_iterator_struct {
-  ht_ptr ht;
+  ht_ptr hash;
   ht_entry_ptr next_entry;
   int next_chain;
 } ht_iterator;
@@ -43,23 +43,23 @@ ht_ptr ht_init(hash_func_ptr hash_func,
                free_func_ptr key_free_func,
                free_func_ptr value_free_func);
 
-void ht_deinit(ht_ptr hash);
+void ht_deinit(ht_ptr this);
 
-int ht_insert(ht_ptr hash,
+int ht_insert(ht_ptr this,
               generic_ptr key, generic_ptr value);
 
-generic_ptr ht_find(ht_ptr hash,
+generic_ptr ht_find(ht_ptr this,
                     generic_ptr key);
 
-int ht_delete(ht_ptr hash,
+int ht_delete(ht_ptr this,
               generic_ptr key);
 
-size_t ht_count(ht_ptr hash);
+size_t ht_count(ht_ptr this);
 
 /* iterators */
 ht_iterator_ptr ht_iter(ht_ptr hash);
-void ht_iter_deinit(ht_iterator_ptr iterator);
-int ht_iter_has_more(ht_iterator_ptr iterator);
-generic_ptr ht_iter_next(ht_iterator_ptr iterator, generic_dptr value);
+void ht_iter_deinit(ht_iterator_ptr this);
+int ht_iter_has_more(ht_iterator_ptr this);
+generic_ptr ht_iter_next(ht_iterator_ptr this, generic_dptr value);
 
 #endif
