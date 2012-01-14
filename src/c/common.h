@@ -24,4 +24,7 @@ typedef int (*cmp_func_ptr)(const generic_ptr a, generic_ptr b); /* 0 -> equal *
 #define MAX(a,b)				                               \
   ((a) > (b) ? (a) : (b))
 
+#define CHECK_INSTANCE(ptr)                                                    \
+  assert(ptr)
+
 #endif
