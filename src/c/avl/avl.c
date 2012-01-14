@@ -13,7 +13,7 @@
 
 #define STACK_SIZE 0x2000
 
-/* static function prototypes */
+/* -- static function prototypes -------------------------------------------- */
 static inline avl_node_ptr
 new_node(generic_ptr key, generic_ptr value);
 
@@ -52,6 +52,8 @@ do_check_tree(avl_node_ptr node, cmp_func_ptr compare, int* error);
 static inline void
 free_entry(avl_node_ptr node, free_func_ptr key_free, free_func_ptr value_free);
 
+/* -- public functions ------------------------------------------------------ */
+
 /**
    Initialize and return a new avl_tree.  Use the function `compare'
    to compare items in the tree.  `compare' should be of the form:
@@ -64,10 +66,11 @@ free_entry(avl_node_ptr node, free_func_ptr key_free, free_func_ptr value_free);
 avl_tree_ptr avl_init(cmp_func_ptr cmp)
 {
   avl_tree_ptr this = (avl_tree_ptr)(malloc(sizeof(avl_tree)));
-
-  this->root = NULL;
-  this->cmp = cmp;
-  this->num_entries = 0;
+  if (this) {
+    this->root = NULL;
+    this->cmp = cmp;
+    this->num_entries = 0;
+  }
 
   return this;
 }
@@ -86,6 +89,8 @@ void avl_deinit(avl_tree_ptr this,
 		free_func_ptr key_free,
 		free_func_ptr value_free)
 {
+  CHECK_INSTANCE(this);
+
   free_entry(this->root, key_free, value_free);
   free(this);
 }
@@ -95,6 +100,8 @@ void avl_deinit(avl_tree_ptr this,
  */
 int avl_count(avl_tree_ptr this)
 {
+  CHECK_INSTANCE(this);
+
   return this->num_entries;
 }
 
@@ -108,8 +115,10 @@ int avl_find(avl_tree_ptr this,
 	     generic_ptr key,
 	     generic_dptr value_p)
 {
-   avl_node_ptr node;
-   int diff;
+  CHECK_INSTANCE(this);
+
+  avl_node_ptr node;
+  int diff;
 
   node = this->root;
   while (node) {
@@ -137,6 +146,8 @@ int avl_first(avl_tree_ptr this,
 	      generic_dptr key_p,
 	      generic_dptr value_p)
 {
+  CHECK_INSTANCE(this);
+
   if (!this->root) return 0;
 
   else {
@@ -158,6 +169,8 @@ int avl_first(avl_tree_ptr this,
 */
 int avl_last(avl_tree_ptr this, generic_dptr key_p, generic_dptr value_p)
 {
+  CHECK_INSTANCE(this);
+
   if (this->root == 0) return 0;
 
   else {
@@ -181,6 +194,8 @@ int avl_last(avl_tree_ptr this, generic_dptr key_p, generic_dptr value_p)
  */
 int avl_insert(avl_tree_ptr this, generic_ptr key, generic_ptr value)
 {
+  CHECK_INSTANCE(this);
+
   avl_node_dptr node_p;
   avl_node_ptr node;
 
@@ -219,6 +234,8 @@ int avl_insert(avl_tree_ptr this, generic_ptr key, generic_ptr value)
 */
 int avl_find_or_insert(avl_tree_ptr this, generic_ptr key, generic_tptr slot_p)
 {
+  CHECK_INSTANCE(this);
+
   avl_node_dptr node_p;
   avl_node_ptr node;
   int stack_n = 0;
@@ -265,6 +282,8 @@ int avl_find_or_insert(avl_tree_ptr this, generic_ptr key, generic_tptr slot_p)
 */
 int avl_delete(avl_tree_ptr this, generic_ptr key, generic_dptr value_p)
 {
+  CHECK_INSTANCE(this);
+
   avl_node_dptr node_p;
   avl_node_ptr node;
   avl_node_ptr rightmost;
@@ -318,6 +337,8 @@ int avl_delete(avl_tree_ptr this, generic_ptr key, generic_dptr value_p)
 */
 int avl_delete_pair(avl_tree_ptr this, generic_ptr key, generic_ptr value_p)
 {
+  CHECK_INSTANCE(this);
+
   avl_node_dptr node_p;
   avl_node_ptr node;
   avl_node_ptr rightmost;
@@ -370,6 +391,7 @@ int avl_delete_pair(avl_tree_ptr this, generic_ptr key, generic_ptr value_p)
 */
 avl_iterator_ptr avl_iter(avl_tree_ptr tree, int dir)
 {
+  CHECK_INSTANCE(tree);
   avl_iterator_ptr this;
 
   /* what a hack */
@@ -395,14 +417,15 @@ avl_iterator_ptr avl_iter(avl_tree_ptr tree, int dir)
 }
 
 
-int avl_iter_next(avl_iterator_ptr iter, generic_dptr key_p, generic_dptr value_p)
+int avl_iter_next(avl_iterator_ptr this, generic_dptr key_p, generic_dptr value_p)
 {
+  CHECK_INSTANCE(this);
   avl_node_ptr node;
 
-  if (iter->count == iter->tree->num_entries) return 0;
+  if (this->count == this->tree->num_entries) return 0;
 
   else {
-    node = iter->nodelist[iter->count++];
+    node = this->nodelist[this->count++];
     if (key_p) (*key_p) = node->key;
     if (value_p) (*value_p) = node->value;
 
@@ -412,12 +435,14 @@ int avl_iter_next(avl_iterator_ptr iter, generic_dptr key_p, generic_dptr value_
 
 
 /**
-   Free a generator.
+   Free an iterator.
 */
-void avl_iter_free(avl_iterator_ptr iter)
+void avl_iter_free(avl_iterator_ptr this)
 {
-  free(iter->nodelist);
-  free(iter);
+  CHECK_INSTANCE(this);
+
+  free(this->nodelist);
+  free(this);
 }
 
 
@@ -435,6 +460,8 @@ void avl_iter_free(avl_iterator_ptr iter)
 */
 void avl_foreach(avl_tree_ptr this, iter_func_ptr func, int direction)
 {
+  CHECK_INSTANCE(this);
+
   if (direction == AVL_ITER_FORWARD) {
     avl_walk_forward(this->root, func);
   }
