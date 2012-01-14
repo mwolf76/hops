@@ -3,6 +3,7 @@
 
 #include "common.h"
 
+/* -- Typedefs -------------------------------------------------------------- */
 typedef struct ht_entry_struct {
   generic_ptr key;
   generic_ptr value;
@@ -15,8 +16,11 @@ typedef struct ht_struct {
   ht_entry_dptr table;
   size_t table_size;
 
+  /* internal function pointers */
   hash_func_ptr hash_func;
   cmp_func_ptr cmp_func;
+  free_func_ptr key_free_func;
+  free_func_ptr value_free_func;
 
   size_t entries;
   int prime_index;
@@ -33,43 +37,29 @@ typedef struct ht_iterator_struct {
 typedef ht_iterator* ht_iterator_ptr;
 typedef ht_iterator** ht_iterator_dptr;
 
-/* typedef size_t (*ht_hash_func)(generic_ptr value); */
-/* typedef int (*ht_equal_func)(generic_ptr value1, */
-/*                              generic_ptr value2); */
-
+/* -- Function prototypes --------------------------------------------------- */
 ht_ptr ht_init(hash_func_ptr hash_func,
-               cmp_func_ptr equal_func);
+               cmp_func_ptr equal_func,
+               free_func_ptr key_free_func,
+               free_func_ptr value_free_func);
 
-void ht_free(ht_ptr hash);
-
-/* /\** */
-/*  * Register functions used to free the key and value when an entry is */
-/*  * removed from a hash table. */
-/*  * */
-/*  * @param ht           The hash table. */
-/*  * @param key_free_func        Function used to free keys. */
-/*  * @param value_free_func      Function used to free values. */
-/*  *\/ */
-
-/* void ht_register_free_functions(Ht *ht, */
-/*                                         generic_ptrFreeFunc key_free_func, */
-/*                                         generic_ptrFreeFunc value_free_func); */
+void ht_deinit(ht_ptr hash);
 
 int ht_insert(ht_ptr hash,
-                      generic_ptr key,
-                      generic_ptr value);
+              generic_ptr key, generic_ptr value);
 
 generic_ptr ht_find(ht_ptr hash,
-                            generic_ptr key);
+                    generic_ptr key);
 
-int ht_remove(ht_ptr hash,
-                      generic_ptr key);
+int ht_delete(ht_ptr hash,
+              generic_ptr key);
 
-int ht_count(ht_ptr hash);
+size_t ht_count(ht_ptr hash);
 
-/* iterators support */
+/* iterators */
 ht_iterator_ptr ht_iter(ht_ptr hash);
+void ht_iter_deinit(ht_iterator_ptr iterator);
 int ht_iter_has_more(ht_iterator_ptr iterator);
-generic_ptr ht_iter_next(ht_iterator_ptr iterator);
+generic_ptr ht_iter_next(ht_iterator_ptr iterator, generic_dptr value);
 
 #endif

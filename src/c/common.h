@@ -17,7 +17,7 @@ typedef void*** generic_tptr;
 typedef void (*free_func_ptr)(generic_ptr data);
 typedef void (*iter_func_ptr)(generic_ptr key, generic_ptr value);
 
-typedef int (*hash_func_ptr)(const generic_ptr a);
+typedef unsigned (*hash_func_ptr)(const generic_ptr a);
 typedef int (*cmp_func_ptr)(const generic_ptr a, generic_ptr b); /* 0 -> equal */
 
 /* -- Macros ---------------------------------------------------------------- */
