@@ -6,8 +6,8 @@ and then wrap'em up using Cython to obtain lightning-speed data structures at th
 I am now taking my first glance at the Cython docs and the wrapping process looks promisingly easy.
 
 Most of the C code is currently derived by the VIS GLU library (licensing issues not clear here,
-but I think the package should be more or less under a BSD-like license. My goal would be to 
-place everything under LGPL so if needed, I will end up rewriting my own implementation of 
+but I think the package should be more or less under a BSD-like license. My goal would be to
+place everything under LGPL so if needed, I will end up rewriting my own implementation of
 non-LGPL compatible pieces of code.
 
 The library should be equipped with a complete test suite covering both the C and Python interfaces.
@@ -15,9 +15,9 @@ The library should be equipped with a complete test suite covering both the C an
 A reasonable set of data structures would be:
 
 1. AVL self-balancing trees (done)
-2. Dynamic Arrays 
+2. Dynamic Arrays
 3. Hash tables
-4. Lists, Stacks and Queues
+4. SLists, DLists, Stacks and Queues
 5. Priority Queues
 6. Graphs (both Directed and Undirected)
 
@@ -28,6 +28,3 @@ Future structures
 
 All of those structures should be fully available both at the C level
 and, most importantly, at the Python level.
-
-
-

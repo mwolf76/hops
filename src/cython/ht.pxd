@@ -23,7 +23,8 @@ cdef extern from "ht/ht.h":
                                  generic_ptr b)
 
     # constructors
-    ht_ptr ht_init(cmp_func_ptr compare)
+    ht_ptr ht_init(hash_func_ptr hash,
+                   cmp_func_ptr compare)
     ht_iterator_ptr ht_iter(ht_ptr hash,
                             int dir)
 

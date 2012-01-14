@@ -307,25 +307,31 @@ int ht_count(ht_ptr ht)
   return ht->entries;
 }
 
-void ht_iterate(ht_ptr ht, ht_iterator_ptr iterator)
+ht_iterator_ptr ht_iterate(ht_ptr ht)
 {
+  ht_iterator_ptr res = (ht_iterator_ptr)(malloc(sizeof(ht_iterator)));
   int chain;
 
-  iterator->ht = ht;
+  res->ht = ht;
 
   /* Default value of next if no entries are found. */
-  iterator->next_entry = NULL;
+  res->next_entry = NULL;
 
   /* Find the first entry */
   for (chain=0; chain<ht->table_size; ++chain) {
 
     if (ht->table[chain] != NULL) {
-      iterator->next_entry = ht->table[chain];
-      iterator->next_chain = chain;
+      res->next_entry = ht->table[chain];
+      res->next_chain = chain;
       break;
     }
   }
+
+  return res;
 }
+
+void ht_iter_free(ht_iterator_ptr iterator)
+{ free(iterator); }
 
 int ht_iter_has_more(ht_iterator_ptr iterator)
 {

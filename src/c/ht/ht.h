@@ -33,9 +33,9 @@ typedef struct ht_iterator_struct {
 typedef ht_iterator* ht_iterator_ptr;
 typedef ht_iterator** ht_iterator_dptr;
 
-typedef size_t (*ht_hash_func)(generic_ptr value);
-typedef int (*ht_equal_func)(generic_ptr value1,
-                             generic_ptr value2);
+/* typedef size_t (*ht_hash_func)(generic_ptr value); */
+/* typedef int (*ht_equal_func)(generic_ptr value1, */
+/*                              generic_ptr value2); */
 
 ht_ptr ht_init(hash_func_ptr hash_func,
                cmp_func_ptr equal_func);
@@ -68,7 +68,7 @@ int ht_remove(ht_ptr hash,
 int ht_count(ht_ptr hash);
 
 /* iterators support */
-void ht_iterate(ht_ptr hash, ht_iterator_ptr iter);
+ht_iterator_ptr ht_iter(ht_ptr hash);
 int ht_iter_has_more(ht_iterator_ptr iterator);
 generic_ptr ht_iter_next(ht_iterator_ptr iterator);
 
