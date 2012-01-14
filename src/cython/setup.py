@@ -9,13 +9,17 @@ setup(
 
     ext_modules = [
         Extension("avl", ["avl.pyx"],
-                  libraries=["avl"]
+                  libraries=["avl"],
+#                   extra_compile_args=["-O0"],
         ),
         Extension("ht", ["ht.pyx"],
-                  libraries=["ht"]
+                  libraries=["ht"],
+#                  extra_compile_args=["-O3", "-funroll-loops", "-fomit-frame-pointer"],
         ),
         Extension("array", ["array.pyx"],
-                  libraries=["array"]
+                  libraries=["array"],
+#                  extra_compile_args=["-O0"],
+
         )
     ]
 )

@@ -3,6 +3,8 @@
 
 #include "common.h"
 
+#define CHUNK_SIZE 2048
+
 /* -- Typedefs -------------------------------------------------------------- */
 typedef struct ht_entry_struct {
   generic_ptr key;
@@ -11,6 +13,14 @@ typedef struct ht_entry_struct {
 } ht_entry;
 typedef ht_entry* ht_entry_ptr;
 typedef ht_entry** ht_entry_dptr;
+
+/* node chunks */
+typedef struct ht_chunk_struct {
+  unsigned used;
+  struct ht_chunk_struct* next;
+  ht_entry nodes[CHUNK_SIZE];
+} ht_chunk;
+typedef ht_chunk* ht_chunk_ptr;
 
 typedef struct ht_struct {
   ht_entry_dptr table;
@@ -23,7 +33,12 @@ typedef struct ht_struct {
   free_func_ptr value_free_func;
 
   size_t entries;
+  size_t next_rehash;
+
   int prime_index;
+
+  /* for efficient node mgmt */
+  ht_chunk_ptr chunks;
 
 } ht;
 typedef ht* ht_ptr;

@@ -16,9 +16,10 @@ static const int ht_num_primes = \
 
 
 /* -- internal functions ---------------------------------------------------- */
-static int ht_allocate_table(ht_ptr this);
-static void ht_free_entry(ht_ptr this, ht_entry_ptr entry);
-static int ht_grow(ht_ptr this);
+static inline int ht_allocate_table(ht_ptr this);
+static inline int ht_new_chunk(ht_ptr this);
+static inline void ht_free_entry(ht_ptr this, ht_entry_ptr entry);
+static inline int ht_grow(ht_ptr this);
 
 ht_ptr ht_init(hash_func_ptr hash_func,
                cmp_func_ptr cmp_func,
@@ -35,8 +36,17 @@ ht_ptr ht_init(hash_func_ptr hash_func,
   this->cmp_func = cmp_func;
   this->key_free_func = key_free_func;
   this->value_free_func = value_free_func;
+
   this->entries = 0;
   this->prime_index = 0;
+
+  this->chunks = NULL;
+
+  /* First chunk setup */
+  if (!ht_new_chunk(this)) {
+    free(this);
+    return NULL;
+  }
 
   /* Allocate the table */
   if (!ht_allocate_table(this)) {
@@ -52,6 +62,8 @@ void ht_deinit(ht_ptr this)
   CHECK_INSTANCE(this);
 
   ht_entry_ptr rover, next;
+  ht_chunk_ptr chunk, next_chunk;
+
   int i;
 
   /* Free all entries in all chains */
@@ -68,6 +80,14 @@ void ht_deinit(ht_ptr this)
   /* Free the table */
   free(this->table);
 
+  /* Free chunks */
+  chunk = this->chunks;
+  while (chunk) {
+    next_chunk = chunk->next;
+    free(chunk);
+    chunk = next_chunk;
+  }
+
   /* Free the hash table structure */
   free(this);
 }
@@ -79,16 +99,12 @@ int ht_insert(ht_ptr this, generic_ptr key, generic_ptr value)
   ht_entry_ptr rover, newentry;
   unsigned index;
 
-  /* If there are too many items in the table with respect to the table
-   * size, the number of hash collisions increases and performance
-   * decreases. Grow the table size to prevent this happening */
-  if ((this->entries * 3) / this->table_size > 0) {
-
-    /* Table is more than 1/3 full */
-    if (!ht_grow(this)) {
-      /* Failed to grow the table */
-      return 0;
-    }
+  /* If there are too many items in the table with respect to the
+   * table size, the number of hash collisions increases and
+   * performance decreases. Grow the table size to prevent this
+   * happening*/
+  if (this->entries > this->next_rehash) {
+    if (!ht_grow(this)) return 0;
   }
 
   /* Generate the hash of the key and hence the index into the table */
@@ -102,34 +118,24 @@ int ht_insert(ht_ptr this, generic_ptr key, generic_ptr value)
     if (!(this->cmp_func(rover->key, key))) {
 
       /* Same key: overwrite this entry with new data */
-
-      /* If there is a value free function, free the old data
-       * before adding in the new data */
-      if (this->value_free_func != NULL) {
-        this->value_free_func(rover->value);
-      }
-
-      /* Same with the key: use the new key value and free
-       * the old one */
-      if (this->key_free_func != NULL) {
-        this->key_free_func(rover->key);
-      }
-
+      ht_free_entry(this, rover);
       rover->key = key;
       rover->value = value;
 
       /* Finished */
       return 1;
     }
+
     rover = rover->next;
   }
 
   /* Not in the hash table yet.  Create a new entry */
-  newentry = (ht_entry_ptr) malloc(sizeof(ht_entry));
-
-  if (newentry == NULL) {
-    return 0;
+  /* newentry = (ht_entry_ptr) malloc(sizeof(ht_entry)); */
+  if (this->chunks->used == CHUNK_SIZE) {
+    if (!ht_new_chunk(this))
+      return 0;
   }
+  newentry = this->chunks->nodes + (this->chunks->used ++);
 
   newentry->key = key;
   newentry->value = value;
@@ -321,7 +327,7 @@ generic_ptr ht_iter_next(ht_iterator_ptr this, generic_dptr value_p)
 
 /* Internal function used to allocate the table on hash table creation
  * and when growing the table */
-static int ht_allocate_table(ht_ptr this)
+static inline int ht_allocate_table(ht_ptr this)
 {
   size_t sz;
 
@@ -331,14 +337,33 @@ static int ht_allocate_table(ht_ptr this)
 
   /* Allocate the table and initialise to NULL for all entries */
   sz = this->table_size * sizeof(ht_entry_ptr);
-  if (this->table = malloc(sz))
+  if ((this->table = malloc(sz)))
     memset(this->table, 0, sz);
+
+  /* calculate next rehashing level (lf = 0.50) */
+  this->next_rehash = this->table_size / 2;
 
   return this->table != NULL;
 }
 
+static inline int ht_new_chunk(ht_ptr this)
+{
+  ht_chunk_ptr chunk;
+  if (!(chunk = (ht_chunk_ptr)(malloc(sizeof(ht_chunk))))) {
+    return 0;
+  }
+
+  chunk->used = 0;
+
+  /* prepend */
+  chunk->next = this->chunks;
+  this->chunks = chunk;
+
+  return 1;
+}
+
 /* Free an entry, calling the free functions if there are any registered */
-static void ht_free_entry(ht_ptr this, ht_entry_ptr entry)
+static inline void ht_free_entry(ht_ptr this, ht_entry_ptr entry)
 {
   /* If there is a function registered for freeing keys, use it to free
    * the key */
@@ -350,12 +375,9 @@ static void ht_free_entry(ht_ptr this, ht_entry_ptr entry)
   if (this->value_free_func != NULL) {
     this->value_free_func(entry->value);
   }
-
-  /* Free the data structure */
-  free(entry);
 }
 
-static int ht_grow(ht_ptr this)
+static inline int ht_grow(ht_ptr this)
 {
   ht_entry_dptr old_table;
   int old_table_size;
@@ -369,7 +391,7 @@ static int ht_grow(ht_ptr this)
   old_prime_index = this->prime_index;
 
   /* Allocate a new, larger table */
-  ++this->prime_index;
+  this->prime_index ++;
 
   if (!ht_allocate_table(this)) {
 
