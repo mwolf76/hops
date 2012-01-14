@@ -44,6 +44,7 @@ typedef struct ht_struct {
 typedef ht* ht_ptr;
 typedef ht** ht_dptr;
 
+
 typedef struct ht_iterator_struct {
   ht_ptr hash;
   ht_entry_ptr next_entry;

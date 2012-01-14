@@ -1,4 +1,6 @@
 /* Hash table implementation */
+#define HT_STATS
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -14,12 +16,21 @@ static const unsigned int ht_primes[] = {
 static const int ht_num_primes = \
   sizeof(ht_primes) / sizeof(unsigned int);
 
-
 /* -- internal functions ---------------------------------------------------- */
 static inline int ht_allocate_table(ht_ptr this);
 static inline int ht_new_chunk(ht_ptr this);
 static inline void ht_free_entry(ht_ptr this, ht_entry_ptr entry);
 static inline int ht_grow(ht_ptr this);
+
+#ifdef HT_STATS
+typedef struct _ht_profile_struct {
+  size_t index;
+  unsigned long load;
+} _ht_profile;
+typedef _ht_profile* _ht_profile_ptr;
+
+static int _ht_profile_cmp(const void *a, const void *b);
+#endif
 
 ht_ptr ht_init(hash_func_ptr hash_func,
                cmp_func_ptr cmp_func,
@@ -64,18 +75,75 @@ void ht_deinit(ht_ptr this)
   ht_entry_ptr rover, next;
   ht_chunk_ptr chunk, next_chunk;
 
-  int i;
+  size_t i;
+
+#ifdef HT_STATS
+  unsigned long total_load=0;
+  double load_avg = 0.0;
+  double load_var = 0.0;
+
+  _ht_profile_ptr profile = (_ht_profile_ptr)(malloc(this->table_size *
+                                                     sizeof(_ht_profile)));
+  for (i=0; i<this->table_size; i++ ) {
+    profile[i].index = i;
+    profile[i].load = 0;
+  }
+#endif
 
   /* Free all entries in all chains */
-  for (i=0; i<this->table_size; ++i) {
+  for (i=0; i<this->table_size; i++ ) {
     rover = this->table[i];
 
     while (rover != NULL) {
+#ifdef HT_STATS
+      profile[i].load ++;
+      total_load ++;
+#endif
       next = rover->next;
       ht_free_entry(this, rover);
       rover = next;
     }
   }
+
+#ifdef HT_STATS
+  /* calculate load average */
+  load_avg = (double) total_load / (double) this->table_size;
+
+  /* calculate load variance */
+  for (i=0; i<this->table_size; i++) {
+    double var = (double) profile[i].load - load_avg;
+    var *= var;
+
+    load_var += var;
+  }
+
+  printf("table size: %ld\n",
+         this->table_size);
+  printf("total load: %ld (%.3f%%)\n",
+         total_load,
+         (double) total_load / this->table_size * 100);
+
+  printf("Avg (load): %.3f\n", load_avg);
+  printf("Var (load): %.3f\n", load_var );
+
+  /* show 10 most loaded buckets */
+  qsort(profile, this->table_size,
+        sizeof(_ht_profile),
+        _ht_profile_cmp);
+
+  printf("\n30 most loaded buckets:\n");
+  printf("----------------------------------------------\n");
+  for (i=0;i<30;i++) {
+    printf("%2d. index = %5d (@%8lx), load = %ld\n",
+           i+1,
+           (&profile[i])->index,
+           (unsigned long)(this->table + (&profile[i])->index),
+           (&profile[i])->load);
+  }
+
+  free (profile);
+
+#endif
 
   /* Free the table */
   free(this->table);
@@ -427,3 +495,14 @@ static inline int ht_grow(ht_ptr this)
 
   return 1;
 }
+
+#ifdef HT_STATS
+static int _ht_profile_cmp(const void *a, const void *b)
+{
+  int res =
+    (*((_ht_profile_ptr) b)).load -
+    (*((_ht_profile_ptr) a)).load;
+
+  return (int) res;
+}
+#endif
