@@ -141,51 +141,6 @@ cdef class Array(object):
          assert self._array is not NULL
          return array.array_n(self._array)
 
-     def __min__(self):
-         """__min__() <==> min(T), get min item (k,v) of T, O(log(n))
-         """
-         cdef generic_ptr key = NULL
-         cdef generic_ptr value = NULL
-         assert self._array is not NULL
-
-         if (array.array_first(self._array, &key, &value) == 0):
-             raise ValueError()
-
-         return ( <object> key, <object> value )
-
-     def __max__(self):
-         """__max__() <==> max(T), get max item (k,v) of T, O(log(n))
-         """
-         cdef generic_ptr key = NULL
-         cdef generic_ptr value = NULL
-         assert self._array is not NULL
-
-         if (array.array_last(self._array, &key, &value) == 0):
-             raise ValueError()
-
-         return ( <object> key, <object> value )
-
-
-     def __and__(self, other):
-         """__and__(other) <==> T & other, intersection
-         """
-         pass
-
-     def __or__(self, other):
-         """__or__(other) <==> T | other, union
-         """
-         pass
-
-     def __sub__(self, other):
-         """__sub__(other) <==> T - other, difference
-         """
-         pass
-
-     def __xor__(self, other):
-         """__xor__(other) <==> T ^ other, symmetric_difference
-         """
-         pass
-
      def __iter__(self):
          """__iter__() <==> iter(T)
          """
@@ -254,22 +209,6 @@ cdef class Array(object):
          """
          assert self._array is not NULL
          return array.array_n(self._array) == 0
-
-     def __delitem__(self, object key):
-         """__delitem__(y) <==> del T[y], del[s:e], O(log(n))
-         """
-         cdef generic_ptr value = NULL
-         assert self._array is not NULL
-
-         if (array_delete(self._array,
-                        <generic_ptr> key, &value) == 0):
-             return
-
-         # explicit reference counting decrement
-         Py_DECREF(key)
-         Py_DECREF(<object> value)
-
-         return
 
      # def pop(self, key, default=None):
      #     """pop(k[,d]) -> v, remove specified key and return the corresponding value, O(log(n))

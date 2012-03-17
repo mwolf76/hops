@@ -1,5 +1,4 @@
 # file: array.pxd
-
 cdef extern from "array/array.h":
 
     ctypedef struct array_struct:
@@ -63,13 +62,3 @@ cdef extern from "array/array.h":
     # find element
     int array_find (array_ptr array,
                     generic_ptr key)
-
-    # first element
-    int array_first (array_ptr array,
-                     generic_dptr pkey,
-                     generic_dptr pvalue)
-
-    # last element
-    int array_last (array_ptr array,
-                    generic_dptr pkey,
-                    generic_dptr pvalue)

@@ -1,1 +1,1 @@
-SUBDIRS = avl ht
+SUBDIRS = avl ht array

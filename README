@@ -1,16 +1,20 @@
 HOPS - Highly Optimized Pythonic Structures
 ============================================
 
-This project's goal is to build a collection of efficient and practical data structures (in C),
-and then wrap'em up using Cython to obtain lightning-speed data structures at the Python level.
-I am now taking my first glance at the Cython docs and the wrapping process looks promisingly easy.
+The goal of this project's is to build a collection of efficient and
+practical data structures (in C), and then wrap'em up using Cython to
+obtain lightning-speed data structures at the Python level.  I am now
+taking my first glance at the Cython docs and the wrapping process
+looks promisingly easy.
 
-Most of the C code is currently derived by the VIS GLU library (licensing issues not clear here,
-but I think the package should be more or less under a BSD-like license. My goal would be to
-place everything under LGPL so if needed, I will end up rewriting my own implementation of
-non-LGPL compatible pieces of code.
+Most of the C code is currently derived by the VIS GLU library
+(licensing issues not clear here, but I think the package should be
+more or less under a BSD-like license. My goal would be to place
+everything under LGPL so if needed, I will end up rewriting my own
+implementation of non-LGPL compatible pieces of code.
 
-The library should be equipped with a complete test suite covering both the C and Python interfaces.
+The library should be equipped with a complete test suite covering
+both the C and Python interfaces.
 
 A reasonable set of data structures would be:
 

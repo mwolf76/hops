@@ -49,6 +49,7 @@ int array_find(array_ptr array, generic_ptr buf);
 
 /* iterators */
 array_iterator_ptr array_iter(array_ptr array, int dir);
+int array_iter_next(array_iterator_ptr iter, generic_dptr next);
 
 unsigned array_n(const array_ptr array);
 

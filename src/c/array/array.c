@@ -71,30 +71,6 @@ int array_insert(array_ptr array, unsigned index, generic_ptr buf)
   return ARRAY_OK;
 }
 
-// ????
-/* int array_delete(array_ptr array, unsigned index, generic_dptr item_p) */
-/* { */
-/*   generic_ptr elem; */
-/*   int res = ARRAY_OK; */
-/*   assert(array); */
-
-/*   if ((index >= array->n_size) && */
-/*       ((res = array_resize(array, 1 + index)) != ARRAY_OK)) */
-/*     return res; */
-
-/*   elem = *(array->space + index); */
-/*   if (!elem) return 0; /\* not found, nothing to delete *\/ */
-
-/*   (*item_p) = elem; */
-
-/*   memcpy(array->space + index, buf, sizeof(generic_ptr)); */
-/*   if (index >= array->num) array->num = index + 1; */
-
-/*   return ARRAY_OK; */
-
-/* } */
-
-
 unsigned array_n(const array_ptr array)
 {
   return array->num;
@@ -116,12 +92,34 @@ unsigned array_count(const array_ptr array, generic_ptr key)
   return res;
 }
 
+array_iterator_ptr array_iter(array_ptr array, int dir)
+{
+  array_iterator_ptr res;
+
+  if (! (res = (array_iterator_ptr)(malloc(sizeof(array_iterator_ptr)))))
+    return NULL;
+
+  if (ARRAY_ITER_FORWARD == dir) {
+    res->next = array->space;
+    res->last = array->space + array->n_size -1;
+  }
+
+  else if (ARRAY_ITER_BACKWARD == dir) {
+    res->last = array->space;
+    res->next = array->space + array->n_size -1;
+  }
+
+  else assert(0);
+
+  return res;
+}
+
 int array_iter_next(array_iterator_ptr iter, generic_dptr next)
 {
   if (iter->next == iter->last) return 0;
 
-  (*next) = (*iter->next),
-    iter->next += iter->dir;
+  (*next) = (*iter->next);
+  iter->next += iter->dir;
 
   return 1;
 }
