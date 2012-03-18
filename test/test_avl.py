@@ -63,7 +63,6 @@ class testAvl(unittest.TestCase):
 
         self.assertEqual(max(self.avl_tree), (199, None))
 
-
     def testForwardIterators(self):
         for i in range(0, 100):
             self.avl_tree.insert(i, str(i))
