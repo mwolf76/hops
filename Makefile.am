@@ -11,8 +11,8 @@ pkgconf_DATA = hops.pc
 
 all:
 	cd $(top_builddir)/src && $(MAKE)
-	find . -name "*.so" -exec cp {} $(top_builddir)/lib \;
+	find . -name "*.so" -exec cp {} $(top_builddir)/lib/hops \;
 
 clean:
 	cd $(top_builddir)/src && $(MAKE) clean
-	rm -f lib/*
+	rm -f lib/hops/*.so

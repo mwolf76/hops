@@ -1,5 +1,5 @@
 import unittest
-import ht
+from hops import ht
 
 class TestHt(unittest.TestCase):
     """A test class for the ht module.

@@ -1,5 +1,5 @@
 import unittest
-import avl
+from hops import avl
 
 class TestAvl(unittest.TestCase):
     """A test class for the avl module.
