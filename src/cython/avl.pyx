@@ -227,12 +227,6 @@ cdef class Avl(object):
 
          return <object> value
 
-     def is_empty(self):
-         """is_empty() -> True if len(T) == 0, O(1)
-         """
-         assert self._tree is not NULL
-         return avl.avl_count(self._tree) == 0
-
      def items(self, reverse=False):
          """items([reverse]) -> list (k, v) items of T, O(n)
          """
@@ -339,12 +333,6 @@ cdef class Avl(object):
          Py_DECREF(value)
 
          return (key, value)
-
-
-     def setdefault(self, k, d=None):
-         """setdefault(k[,d]) -> T.get(k, d), also set T[k]=d if k not in T, O(log(n))
-         """
-         pass
 
      def update(self, E):
          """update(E) -> None. Update T from dict/iterable E, O(E*log(n))
