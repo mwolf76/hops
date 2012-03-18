@@ -27,9 +27,9 @@ class TestHt(unittest.TestCase):
         self.ht.insert(42, "Forty-two")
         self.assertTrue(42 in self.ht)
 
-    # def testKeyGetter(self):
-    #     self.ht.insert(42, "Forty-two")
-    #     self.assertEquals(self.ht.get(42, "What?!?"), "Forty-two")
+    def testKeyGetter(self):
+        self.ht.insert(42, "Forty-two")
+        self.assertEquals(self.ht.get(42, "What?!?"), "Forty-two")
 
     # def testPopExisting(self):
     #     self.assertEquals(0, len(self.ht))
@@ -72,62 +72,18 @@ class TestHt(unittest.TestCase):
     #     self.assertTrue(42 in self.ht)
     #     self.assertEquals(self.ht[42], "Duplicate")
 
-    # def testKeyValueInsertion(self):
-    #     self.ht.insert(33, "Thirty-three")
-    #     self.assertTrue(33 in self.ht)
-    #     self.assertEquals(self.ht[33], "Thirty-three")
+    def testKeyValueInsertion(self):
+        self.ht.insert(33, "Thirty-three")
+        self.assertTrue(33 in self.ht)
+        self.assertEquals(self.ht[33], "Thirty-three")
 
-    # def testIntegerOrdering(self):
-    #     for i in range(99, -1, -1):
-    #         self.ht.insert(i)
+    def testForwardIterators(self):
+        for i in range(0, 100):
+            self.ht.insert(i, str(i))
 
-    #     self.assertEquals(self.ht.keys(), range(0, 100))
-
-    # def testLexicographicOrdering(self):
-    #     strings = [
-    #         "alpha", "beta", "gamma", "delta", "epsilon", "zeta",
-    #         "eta", "theta", "iota", "kappa", "lambda", "mu", "nu",
-    #         "xi", "omicron", "pi", "rho", "sigma", "tau", "upsilon",
-    #         "phi", "chi", "psi", "omega" ]
-
-    #     for s in strings:
-    #         self.ht.insert(s)
-
-    #     last = None
-    #     for s in self.ht.keys():
-    #         self.assertTrue(last is None or last < s)
-    #         last = s
-
-    # def testMin(self):
-    #     for i in range(99, -1, -1):
-    #         self.ht.insert(i)
-    #     for i in range(100, 200):
-    #         self.ht.insert(i)
-
-    #     self.assertEqual(min(self.ht), (0, None))
-
-    # def testMax(self):
-    #     for i in range(99, -1, -1):
-    #         self.ht.insert(i)
-    #     for i in range(100, 200):
-    #         self.ht.insert(i)
-
-    #     self.assertEqual(max(self.ht), (199, None))
-
-    # def testForwardIterators(self):
-    #     for i in range(0, 100):
-    #         self.ht.insert(i, str(i))
-
-    #     items = iter(self.ht)
-    #     for (i, k) in zip(xrange(0, 100), items):
-    #         self.assertEquals(i, k[0])
-    #         self.assertEquals(str(i), k[1])
-
-    # def testBackwardIterators(self):
-    #     for i in range(0, 100):
-    #         self.ht.insert(i, str(i))
-
-    #     items = reversed(self.ht)
-    #     for (i, k) in zip(xrange(0, 100), items):
-    #         self.assertEquals(99 - i, k[0])
-    #         self.assertEquals(str(99 - i), k[1])
+        items = iter(self.ht)
+        count = 0
+        for (i, j) in items:
+            self.assertEquals(str(i), j)
+            count += 1
+        self.assertEquals(count, 100)
