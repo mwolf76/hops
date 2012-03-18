@@ -1,2 +1,2 @@
 all:
-	PYTHONPATH="../lib" python test_avl.py
+	PYTHONPATH="../lib" python test.py

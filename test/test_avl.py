@@ -1,7 +1,7 @@
 import unittest
 import avl
 
-class testAvl(unittest.TestCase):
+class TestAvl(unittest.TestCase):
     """A test class for the avl module.
     """
 
@@ -132,14 +132,3 @@ class testAvl(unittest.TestCase):
         for (i, k) in zip(xrange(0, 100), items):
             self.assertEquals(99 - i, k[0])
             self.assertEquals(str(99 - i), k[1])
-
-def suite():
-
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(testavl))
-
-    return suite
-
-if __name__ == '__main__':
-
-    unittest.main()
