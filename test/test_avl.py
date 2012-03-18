@@ -17,6 +17,13 @@ class testAvl(unittest.TestCase):
             self.avl_tree.insert(i)
         self.assertEquals(100, len(self.avl_tree))
 
+    def testClear(self):
+        self.assertEquals(0, len(self.avl_tree))
+        for i in range(99, -1, -1):
+            self.avl_tree.insert(i)
+        self.avl_tree.clear()
+        self.assertEquals(0, len(self.avl_tree))
+
     def testKeyInsertion(self):
         self.avl_tree.insert(42, "Forty-two")
         self.assertTrue(42 in self.avl_tree)

@@ -114,6 +114,8 @@ void avl_clear(avl_tree_ptr this,
   CHECK_INSTANCE(this);
 
   free_entry(this->root, key_free, value_free);
+  this->root = NULL;
+  this->num_entries = 0;
 }
 
 /**
