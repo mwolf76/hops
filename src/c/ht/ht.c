@@ -160,6 +160,51 @@ void ht_deinit(ht_ptr this)
   free(this);
 }
 
+void ht_clear(ht_ptr this)
+{
+  CHECK_INSTANCE(this);
+
+  ht_entry_ptr rover, next;
+  ht_chunk_ptr chunk, next_chunk;
+
+  size_t i, tmp;
+
+  /* Free all entries in all chains */
+  for (i=0; i<this->table_size; i++ ) {
+    rover = this->table[i];
+
+    while (rover != NULL) {
+      next = rover->next;
+      ht_free_entry(this, rover);
+      rover = next;
+    }
+  }
+
+  /* Free the table */
+  free(this->table);
+
+  /* Free chunks */
+  chunk = this->chunks;
+  while (chunk) {
+    next_chunk = chunk->next;
+    free(chunk);
+    chunk = next_chunk;
+  }
+
+  this->entries = 0;
+  this->prime_index = 0;
+
+  this->chunks = NULL;
+
+  /* First chunk setup */
+  tmp  = ht_new_chunk(this);
+  assert(tmp);
+
+  tmp = ht_allocate_table(this);
+  assert(tmp);
+}
+
+
 int ht_insert(ht_ptr this, generic_ptr key, generic_ptr value)
 {
   CHECK_INSTANCE(this);
@@ -213,7 +258,7 @@ int ht_insert(ht_ptr this, generic_ptr key, generic_ptr value)
   this->table[index] = newentry;
 
   /* Maintain the count of the number of entries */
-  ++this->entries;
+  ++ this->entries;
 
   /* Added successfully */
   return 1;

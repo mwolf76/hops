@@ -138,16 +138,11 @@ cdef class Ht(object):
          assert self._hash is not NULL
          return HtIterator(self)
 
-     def __reversed__(self):
-         """__reversed__() <==> reversed(T)
-         """
-         pass
-
      def clear(self):
          """clear() -> None, remove all items from T, O(n)
          """
          assert self._hash is not NULL
-         pass
+         ht.ht_clear(self._hash)
 
      def copy(self):
          """copy() -> a shallow copy of T, O(n*log(n))

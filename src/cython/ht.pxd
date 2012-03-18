@@ -36,6 +36,8 @@ cdef extern from "ht/ht.h":
 
     void ht_deinit(ht_ptr ht)
 
+    void ht_clear(ht_ptr ht)
+
     # iterators
     ht_iterator_ptr ht_iter(ht_ptr hash)
     void ht_iter_deinit(ht_iterator_ptr iter_)

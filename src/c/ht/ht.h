@@ -61,6 +61,8 @@ ht_ptr ht_init(hash_func_ptr hash_func,
 
 void ht_deinit(ht_ptr this);
 
+void ht_clear(ht_ptr this);
+
 int ht_insert(ht_ptr this,
               generic_ptr key, generic_ptr value);
 
