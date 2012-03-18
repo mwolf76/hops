@@ -1,5 +1,5 @@
 SUBDIRS =
-FILES = FAQ
+FILES =
 EXTRA_DIST = $(FILES)
 
 all:
