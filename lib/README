@@ -1,0 +1,4 @@
+This directory will be populated with the binary modules obtained when
+building the c/cython wrappers. This directory must be on the PYTHONPATH
+in order to use the custom modules provided by the hops library. For an example,
+see file hops/test/Makefile.am
