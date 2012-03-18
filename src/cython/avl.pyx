@@ -25,7 +25,7 @@ cdef class AvlForwardIterator(object):
 
      def __iter__(self):
          return self
-     
+
      def __next__(self):
          cdef int res
          cdef generic_ptr key = NULL
@@ -41,8 +41,8 @@ cdef class AvlForwardIterator(object):
 cdef class AvlBackwardIterator(object):
      cdef avl.avl_iterator_ptr _iterator
 
-     def __init__(self, obj):
-         self._iterator = avl.avl_iter(<avl_tree_ptr> obj._tree, 1)  # backward
+     def __init__(self, Avl obj):
+         self._iterator = avl.avl_iter(obj._tree, 1)  # backward
          if self._iterator is NULL:
             raise MemoryError()
 
@@ -52,7 +52,7 @@ cdef class AvlBackwardIterator(object):
 
      def __iter__(self):
          return self
-     
+
      def __next__(self):
          cdef int res
          cdef generic_ptr key = NULL
@@ -95,8 +95,8 @@ cdef class Avl(object):
          """C dctor
          """
          assert self._tree is not NULL
-         avl.avl_deinit(self._tree, 
-                        <free_func_ptr> free_callback, 
+         avl.avl_deinit(self._tree,
+                        <free_func_ptr> free_callback,
                         <free_func_ptr> free_callback)
 
 
@@ -120,7 +120,7 @@ cdef class Avl(object):
          assert self._tree is not NULL
 
          if (avl.avl_find(self._tree,
-                          <generic_ptr> key, 
+                          <generic_ptr> key,
                           &value) == 0):
              raise ValueError()
 
@@ -136,11 +136,11 @@ cdef class Avl(object):
          Py_INCREF(value)
 
          avl.avl_insert(self._tree,
-                        <generic_ptr> key, 
+                        <generic_ptr> key,
                         <generic_ptr> value)
 
      def insert(self, object key, object value=None):
-         
+
          assert self._tree is not NULL
 
          # explicit reference counting increment
@@ -148,7 +148,7 @@ cdef class Avl(object):
          Py_INCREF(value)
 
          avl.avl_insert(self._tree,
-                        <generic_ptr> key, 
+                        <generic_ptr> key,
                         <generic_ptr> value)
 
      def __len__(self):
@@ -156,7 +156,7 @@ cdef class Avl(object):
          """
          assert self._tree is not NULL
          return avl.avl_count(self._tree)
-         
+
      def __min__(self):
          """__min__() <==> min(T), get min item (k,v) of T, O(log(n))
          """
@@ -191,7 +191,7 @@ cdef class Avl(object):
          """__or__(other) <==> T | other, union
          """
          pass
-     
+
      def __sub__(self, other):
          """__sub__(other) <==> T - other, difference
          """
@@ -242,7 +242,7 @@ cdef class Avl(object):
          assert self._tree is not NULL
 
          if (avl.avl_find(self._tree,
-                          <generic_ptr> key, 
+                          <generic_ptr> key,
                           &value) == 0):
              return default
 
@@ -267,12 +267,12 @@ cdef class Avl(object):
          try:
              while True:
                  res.append(iter_.next())
-         
+
          except StopIteration:
              pass
 
          return res
-             
+
      def keys(self, reverse=False):
          """keys([reverse]) -> list for keys of T, O(n)
          """
@@ -286,12 +286,12 @@ cdef class Avl(object):
          try:
              while True:
                  res.append(iter_.next()[0])
-         
+
          except StopIteration:
              pass
 
          return res
-             
+
      def values(self, reverse=False):
          """values([reverse]) -> generator for values of T, O(n)
          """
@@ -305,7 +305,7 @@ cdef class Avl(object):
          try:
              while True:
                  res.append(iter_.next()[1])
-         
+
          except StopIteration:
              pass
 
@@ -316,7 +316,7 @@ cdef class Avl(object):
          """
          cdef generic_ptr value = NULL
          assert self._tree is not NULL
-         
+
          if (avl_delete(self._tree,
                         <generic_ptr> key, &value) == 0):
              return
@@ -332,7 +332,7 @@ cdef class Avl(object):
          """
          cdef generic_ptr value = NULL
          assert self._tree is not NULL
-         
+
          if (avl_delete(self._tree,
                         <generic_ptr> key, &value) == 0):
              return default
@@ -349,7 +349,7 @@ cdef class Avl(object):
          """popitem() -> (k, v), remove and return some (key, value) pair as a 2-tuple, O(log(n))
          """
          assert self._tree is not NULL
-         
+
          if (avl_delete_pair(self._tree,
                              <generic_ptr> key,
                              <generic_ptr> value) == 0):

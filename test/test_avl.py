@@ -6,7 +6,6 @@ class testAvl(unittest.TestCase):
     """
 
     def setUp(self):
-
         """set up data used in the tests. setUp is called before each
         test function execution.
         """
@@ -19,8 +18,49 @@ class testAvl(unittest.TestCase):
 
     def testKeyValueInsertion(self):
         self.avl_tree.insert(33, "Thirty-three")
-        self.assertTrue(33in self.avl_tree)
+        self.assertTrue(33 in self.avl_tree)
         self.assertEquals(self.avl_tree[33], "Thirty-three")
+
+    def testIntegerOrdering(self):
+        for i in range(99, -1, -1):
+            self.avl_tree.insert(i)
+
+        self.assertEquals(self.avl_tree.keys(), range(0, 100))
+
+    def testLexicographicOrdering(self):
+        strings = [
+            "alpha", "beta", "gamma", "delta", "epsilon", "zeta",
+            "eta", "theta", "iota", "kappa", "lambda", "mu", "nu",
+            "xi", "omicron", "pi", "rho", "sigma", "tau", "upsilon",
+            "phi", "chi", "psi", "omega" ]
+
+        for s in strings:
+            self.avl_tree.insert(s)
+
+        last = None
+        for s in self.avl_tree.keys():
+            self.assertTrue(last is None or last < s)
+            last = s
+
+    def testForwardIterators(self):
+        for i in range(0, 100):
+            self.avl_tree.insert(i, str(i))
+
+        items = iter(self.avl_tree)
+        for (i, k) in zip(xrange(0, 100), items):
+            self.assertEquals(i, k[0])
+            self.assertEquals(str(i), k[1])
+
+    def testBackwardIterators(self):
+        for i in range(0, 100):
+            self.avl_tree.insert(i, str(i))
+
+        items = reversed(self.avl_tree)
+        for (i, k) in zip(xrange(0, 100), items):
+            self.assertEquals(99 - i, k[0])
+            self.assertEquals(str(99 - i), k[1])
+
+
 
     # def testGetFeedPostingURL(self):
 
