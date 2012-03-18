@@ -197,7 +197,9 @@ cdef class Avl(object):
          """clear() -> None, remove all items from T, O(n)
          """
          assert self._tree is not NULL
-         pass
+         avl.avl_clear(self._tree,
+                       <free_func_ptr> free_callback,
+                       <free_func_ptr> free_callback)
 
      def copy(self):
          """copy() -> a shallow copy of T, O(n*log(n))

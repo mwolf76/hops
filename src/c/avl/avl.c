@@ -95,6 +95,27 @@ void avl_deinit(avl_tree_ptr this,
   free(this);
 }
 
+
+/**
+   Clears all items, leaving the tree empty as if it had been just
+   created. The functions key_delete_func and value_delete_func, if
+   non-null, are called to free each (key, value) pair.  They are
+   declared as:
+
+   void key_delete_func(generic_ptr key);
+   void value_delete_func(generic_ptr value);
+
+   The C-library function free is often suitable as a free function.
+*/
+void avl_clear(avl_tree_ptr this,
+		free_func_ptr key_free,
+		free_func_ptr value_free)
+{
+  CHECK_INSTANCE(this);
+
+  free_entry(this->root, key_free, value_free);
+}
+
 /**
     Returns number of entries in the tree
  */

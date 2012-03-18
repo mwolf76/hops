@@ -72,6 +72,11 @@ void avl_deinit(avl_tree_ptr tree,
 		free_func_ptr free_key,
 		free_func_ptr free_value);
 
+/* remove all entries */
+void avl_clear(avl_tree_ptr tree,
+               free_func_ptr free_key,
+               free_func_ptr free_value);
+
 /* deletion */
 int avl_delete (avl_tree_ptr tree,
 		generic_ptr key,
