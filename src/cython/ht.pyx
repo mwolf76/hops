@@ -132,26 +132,6 @@ cdef class Ht(object):
          assert self._hash is not NULL
          return ht.ht_count(self._hash)
 
-     def __and__(self, other):
-         """__and__(other) <==> T & other, intersection
-         """
-         pass
-
-     def __or__(self, other):
-         """__or__(other) <==> T | other, union
-         """
-         pass
-
-     def __sub__(self, other):
-         """__sub__(other) <==> T - other, difference
-         """
-         pass
-
-     def __xor__(self, other):
-         """__xor__(other) <==> T ^ other, symmetric_difference
-         """
-         pass
-
      def __iter__(self):
          """__iter__() <==> iter(T)
          """
