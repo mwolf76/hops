@@ -127,6 +127,7 @@ AC_CONFIG_FILES([Makefile
                  src/c/ht/Makefile
 		 src/c/array/Makefile
 		 src/cython/Makefile
+                 test/Makefile
 		 hops.pc])
 
 AC_OUTPUT

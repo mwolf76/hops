@@ -16,7 +16,3 @@ all:
 clean:
 	cd $(top_builddir)/src && $(MAKE) clean
 	rm -f lib/*
-
-# Test suite
-test:
-	cd $(top_builddir)/test && $(MAKE)

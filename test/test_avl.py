@@ -14,10 +14,13 @@ class testAvl(unittest.TestCase):
 
 
     def testKeyInsertion(self):
-        title = "insertion"
         self.avl_tree.insert(42, "Forty-two")
-
         self.assertTrue(42 in self.avl_tree)
+
+    def testKeyValueInsertion(self):
+        self.avl_tree.insert(33, "Thirty-three")
+        self.assertTrue(33in self.avl_tree)
+        self.assertEquals(self.avl_tree[33], "Thirty-three")
 
     # def testGetFeedPostingURL(self):
 
