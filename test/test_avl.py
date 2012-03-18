@@ -11,6 +11,11 @@ class testAvl(unittest.TestCase):
         """
         self.avl_tree = avl.Avl()
 
+    def testCount(self):
+        self.assertEquals(0, len(self.avl_tree))
+        for i in range(99, -1, -1):
+            self.avl_tree.insert(i)
+        self.assertEquals(100, len(self.avl_tree))
 
     def testKeyInsertion(self):
         self.avl_tree.insert(42, "Forty-two")
@@ -42,6 +47,23 @@ class testAvl(unittest.TestCase):
             self.assertTrue(last is None or last < s)
             last = s
 
+    def testMin(self):
+        for i in range(99, -1, -1):
+            self.avl_tree.insert(i)
+        for i in range(100, 200):
+            self.avl_tree.insert(i)
+
+        self.assertEqual(min(self.avl_tree), (0, None))
+
+    def testMax(self):
+        for i in range(99, -1, -1):
+            self.avl_tree.insert(i)
+        for i in range(100, 200):
+            self.avl_tree.insert(i)
+
+        self.assertEqual(max(self.avl_tree), (199, None))
+
+
     def testForwardIterators(self):
         for i in range(0, 100):
             self.avl_tree.insert(i, str(i))
@@ -59,8 +81,6 @@ class testAvl(unittest.TestCase):
         for (i, k) in zip(xrange(0, 100), items):
             self.assertEquals(99 - i, k[0])
             self.assertEquals(str(99 - i), k[1])
-
-
 
     # def testGetFeedPostingURL(self):
 
