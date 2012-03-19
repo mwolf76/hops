@@ -18,7 +18,7 @@ setup(
         ),
         Extension("array", ["array.pyx"],
                   libraries=["array"],
-#                  extra_compile_args=["-O0"],
+                  extra_compile_args=["-O0"],
 
         )
     ]

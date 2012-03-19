@@ -65,7 +65,7 @@ int array_insert(array_ptr array, unsigned index, generic_ptr buf)
       ((res = array_resize(array, 1 + index)) != ARRAY_OK))
     return res;
 
-  memcpy(array->space + index, buf, sizeof(generic_ptr));
+  *(array->space + index) = buf;
   if (index >= array->num) array->num = index + 1;
 
   return ARRAY_OK;

@@ -46,7 +46,7 @@ AM_PROG_CC_C_O
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_CXXCPP
-CFLAGS="-Wall -Wstrict-prototypes -O3 -fomit-frame-pointer -funroll-loops $excflags$oldcflags"
+CFLAGS="-Wall -Wstrict-prototypes -O0 -g -fomit-frame-pointer -funroll-loops $excflags$oldcflags"
 
 if test "x$ac_cv_prog_CPP" != "x"; then
 AC_DEFINE(HAVE_CPP, 1, Have preprocessor)

@@ -123,7 +123,10 @@ cdef class Array(object):
                                &value) != 0):
              raise ValueError()
 
-         return <object> value
+         if value is NULL:
+             return None
+         else:
+             return <object> value
 
      def __setitem__(self, unsigned ndx, object value):
          """__setitem__(key, value) <==> T[key] = value, O(log(n))
